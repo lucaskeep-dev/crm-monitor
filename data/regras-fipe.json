@@ -1,0 +1,258 @@
+[
+  {
+    "tipos": [
+      {
+        "codigo": "1",
+        "nome": "AUTOMOVEL"
+      },
+      {
+        "codigo": "124",
+        "nome": "AUTOMOVEL (GOLD)"
+      },
+      {
+        "codigo": "113",
+        "nome": "AUTOMOVEL (LIGHT)"
+      },
+      {
+        "codigo": "135",
+        "nome": "AUTOMOVEL (PLATINUM)"
+      },
+      {
+        "codigo": "125",
+        "nome": "AUTOMOVEL APLICATIVO (GOLD)"
+      },
+      {
+        "codigo": "114",
+        "nome": "AUTOMOVEL APLICATIVO (LIGHT)"
+      },
+      {
+        "codigo": "136",
+        "nome": "AUTOMOVEL APLICATIVO (PLATINUM)"
+      },
+      {
+        "codigo": "103",
+        "nome": "AUTOMOVEL LEVE (BASICO)"
+      },
+      {
+        "codigo": "148",
+        "nome": "AUTOMOVEL LEVE (BRONZE)"
+      },
+      {
+        "codigo": "108",
+        "nome": "AUTOMOVEL LEVE (GOLDEN)"
+      },
+      {
+        "codigo": "101",
+        "nome": "AUTOMOVEL LEVE (OURO)"
+      },
+      {
+        "codigo": "107",
+        "nome": "AUTOMOVEL LEVE (PLATINUM)"
+      },
+      {
+        "codigo": "147",
+        "nome": "AUTOMOVEL LEVE (PRATA)"
+      },
+      {
+        "codigo": "31",
+        "nome": "AUTOMOVEL ROUBO/FURTO"
+      },
+      {
+        "codigo": "98",
+        "nome": "BUGRE"
+      },
+      {
+        "codigo": "2",
+        "nome": "CAMINHAO"
+      },
+      {
+        "codigo": "133",
+        "nome": "PESADO, ATE 3500KG (GOLD)"
+      },
+      {
+        "codigo": "122",
+        "nome": "PESADO, ATE 3500KG (LIGHT)"
+      },
+      {
+        "codigo": "142",
+        "nome": "PESADO, ATE 3500KG (PLATINUM)"
+      },
+      {
+        "codigo": "132",
+        "nome": "PICK UP (GOLD)"
+      },
+      {
+        "codigo": "121",
+        "nome": "PICK UP (LIGHT)"
+      },
+      {
+        "codigo": "141",
+        "nome": "PICK UP (PLATINUM)"
+      },
+      {
+        "codigo": "5",
+        "nome": "PREMIUM"
+      },
+      {
+        "codigo": "130",
+        "nome": "PREMIUM (GOLD)"
+      },
+      {
+        "codigo": "119",
+        "nome": "PREMIUM (LIGHT)"
+      },
+      {
+        "codigo": "139",
+        "nome": "PREMIUM (PLATINUM)"
+      },
+      {
+        "codigo": "112",
+        "nome": "SOMENTE RASTREADOR"
+      },
+      {
+        "codigo": "7",
+        "nome": "SOMENTE RASTREADOR AUTOMOVEL"
+      },
+      {
+        "codigo": "21",
+        "nome": "SOMENTE RASTREADOR CAMINHAO"
+      },
+      {
+        "codigo": "20",
+        "nome": "SOMENTE RASTREADOR MOTOCICLETA"
+      },
+      {
+        "codigo": "23",
+        "nome": "SOMENTE RASTREADOR PREMIUM"
+      },
+      {
+        "codigo": "24",
+        "nome": "SOMENTE RASTREADOR SUV/PICK UP/DIESE"
+      },
+      {
+        "codigo": "19",
+        "nome": "SOMENTE RASTREADOR TAXI/ALUGEL/APP"
+      },
+      {
+        "codigo": "22",
+        "nome": "SOMENTE RASTREADOR VAN/ VAN LONGA/ KIA BONGO/ HYUN"
+      },
+      {
+        "codigo": "128",
+        "nome": "SUV (GOLD)"
+      },
+      {
+        "codigo": "117",
+        "nome": "SUV (LIGHT)"
+      },
+      {
+        "codigo": "137",
+        "nome": "SUV (PLATINUM)"
+      },
+      {
+        "codigo": "129",
+        "nome": "SUV APLICATIVO (GOLD)"
+      },
+      {
+        "codigo": "118",
+        "nome": "SUV APLICATIVO (LIGHT)"
+      },
+      {
+        "codigo": "138",
+        "nome": "SUV APLICATIVO (PLATINUM)"
+      },
+      {
+        "codigo": "6",
+        "nome": "SUV/PICK UP/DIESEL"
+      },
+      {
+        "codigo": "104",
+        "nome": "SUV/UTILITARIO/PICK UP (BASICO)"
+      },
+      {
+        "codigo": "145",
+        "nome": "SUV/UTILITARIO/PICK UP (BRONZE)"
+      },
+      {
+        "codigo": "111",
+        "nome": "SUV/UTILITARIO/PICK UP (GOLD)"
+      },
+      {
+        "codigo": "102",
+        "nome": "SUV/UTILITARIO/PICK UP (OURO)"
+      },
+      {
+        "codigo": "109",
+        "nome": "SUV/UTILITARIO/PICK UP (PLATINUM)"
+      },
+      {
+        "codigo": "146",
+        "nome": "SUV/UTILITARIO/PICK UP (PRATA)"
+      },
+      {
+        "codigo": "4",
+        "nome": "TAXI/ ALUGUEL/APP"
+      },
+      {
+        "codigo": "30",
+        "nome": "TAXI/ ALUGUEL/APP CENTRO-OESTE"
+      },
+      {
+        "codigo": "144",
+        "nome": "TAXI/ALUGUEL/APP (BASICO)"
+      },
+      {
+        "codigo": "18",
+        "nome": "VAN/ VAN LONGA/ KIA BONGO/ HYUNDAI HR"
+      },
+      {
+        "codigo": "56",
+        "nome": "VELOX ASSIST (LEVE)"
+      }
+    ],
+    "valor_fipe_minimo": 30000,
+    "valor_fipe_maximo": null,
+    "ativo": true,
+    "id": "35d91b15-ea0a-41e2-857c-0a338dc452af",
+    "criado_em": "2026-04-11T03:52:55.096Z",
+    "atualizado_em": "2026-04-11T03:52:55.096Z"
+  },
+  {
+    "tipos": [
+      {
+        "codigo": "3",
+        "nome": "MOTOCICLETA"
+      },
+      {
+        "codigo": "126",
+        "nome": "MOTOCICLETA (GOLD)"
+      },
+      {
+        "codigo": "115",
+        "nome": "MOTOCICLETA (LIGHT)"
+      },
+      {
+        "codigo": "100",
+        "nome": "MOTOCICLETA (OURO)"
+      },
+      {
+        "codigo": "105",
+        "nome": "MOTOCICLETA (RIO DE JANEIRO)"
+      },
+      {
+        "codigo": "127",
+        "nome": "MOTOCICLETA APLICATIVO (GOLD)"
+      },
+      {
+        "codigo": "116",
+        "nome": "MOTOCICLETA APLICATIVO (LIGHT)"
+      }
+    ],
+    "valor_fipe_minimo": 20000,
+    "valor_fipe_maximo": null,
+    "ativo": true,
+    "id": "98eba16a-9d99-4678-a4a6-8c8234d86f9e",
+    "criado_em": "2026-04-11T03:54:24.801Z",
+    "atualizado_em": "2026-04-11T03:54:24.801Z"
+  }
+]
