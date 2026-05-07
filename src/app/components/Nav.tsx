@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Settings, SlidersHorizontal } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { LayoutDashboard, Settings, SlidersHorizontal, LogOut } from 'lucide-react';
 import ZenLogo from './ZenLogo';
 
 const LINKS = [
@@ -13,13 +13,20 @@ const LINKS = [
 
 export default function Nav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  if (pathname === '/login') return null;
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+  }
 
   return (
     <nav className="sticky top-0 z-40 border-b border-blue-500/10 bg-[#07090f]/80 backdrop-blur-xl backdrop-saturate-150">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            {/* Logo + nome */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative">
                 <div className="absolute inset-0 bg-blue-500/30 blur-xl rounded-full group-hover:bg-blue-500/50 transition-colors" />
@@ -40,7 +47,6 @@ export default function Nav() {
               </div>
             </Link>
 
-            {/* Links */}
             <div className="flex gap-1 ml-4">
               {LINKS.map(({ href, label, icon: Icon }) => {
                 const ativo = href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -65,11 +71,21 @@ export default function Nav() {
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-[11px] font-mono text-gray-500">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-green" />
-            <span>SGA · RDV</span>
-            <span className="text-gray-700">|</span>
-            <span className="text-blue-400/70">v2.0</span>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-2 text-[11px] font-mono text-gray-500">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-green" />
+              <span>SGA · RDV</span>
+              <span className="text-gray-700">|</span>
+              <span className="text-blue-400/70">v2.0</span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+              title="Sair"
+            >
+              <LogOut size={13} />
+              <span className="hidden sm:inline">Sair</span>
+            </button>
           </div>
         </div>
       </div>
