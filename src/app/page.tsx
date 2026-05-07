@@ -601,30 +601,28 @@ function TabelaSemPontuar({ veiculos, selecionados, setSelecionados }: {
   const [ord, setOrd] = useState<{ campo: keyof VeiculoSemPontuar; dir: 'asc' | 'desc' }>({ campo: 'dias_sem_pontuar', dir: 'desc' });
   const [filtroVeiculo, setFiltroVeiculo] = useState<Set<string>>(new Set());
   const [filtroTipo, setFiltroTipo] = useState<Set<string>>(new Set());
-  const [filtroSituacao, setFiltroSituacao] = useState<Set<string>>(new Set());
 
-  const valoresVeiculo = useMemo(
-    () => Array.from(new Set(veiculos.map(v => v.modelo).filter((s): s is string => Boolean(s)))),
+  const ativos = useMemo(
+    () => veiculos.filter(v => (v.situacao_sga || '').toUpperCase() === 'ATIVO'),
     [veiculos]
+  );
+  const valoresVeiculo = useMemo(
+    () => Array.from(new Set(ativos.map(v => v.modelo).filter((s): s is string => Boolean(s)))),
+    [ativos]
   );
   const valoresTipo = useMemo(
-    () => Array.from(new Set(veiculos.map(v => v.tipo_veiculo).filter((s): s is string => Boolean(s)))),
-    [veiculos]
-  );
-  const valoresSituacao = useMemo(
-    () => Array.from(new Set(veiculos.map(v => v.situacao_sga).filter((s): s is string => Boolean(s)))),
-    [veiculos]
+    () => Array.from(new Set(ativos.map(v => v.tipo_veiculo).filter((s): s is string => Boolean(s)))),
+    [ativos]
   );
 
-  const filtrados = veiculos.filter(v => {
+  const filtrados = ativos.filter(v => {
     if (filtroVeiculo.size > 0 && !filtroVeiculo.has(v.modelo || '')) return false;
     if (filtroTipo.size > 0 && !filtroTipo.has(v.tipo_veiculo || '')) return false;
-    if (filtroSituacao.size > 0 && !filtroSituacao.has(v.situacao_sga || '')) return false;
     const t = busca.toLowerCase();
     if (!t) return true;
     return v.placa?.toLowerCase().includes(t) || v.modelo?.toLowerCase().includes(t)
       || v.marca?.toLowerCase().includes(t) || v.nome_associado?.toLowerCase().includes(t)
-      || v.cpf_associado?.includes(t) || v.situacao_sga?.toLowerCase().includes(t);
+      || v.cpf_associado?.includes(t);
   }).sort((a, b) => {
     const va = a[ord.campo] ?? ''; const vb = b[ord.campo] ?? '';
     const m = ord.dir === 'asc' ? 1 : -1; return va < vb ? -m : va > vb ? m : 0;
@@ -660,7 +658,6 @@ function TabelaSemPontuar({ veiculos, selecionados, setSelecionados }: {
               <ThCell campo="placa" label="Placa" ordenacao={ord} toggle={toggle} />
               <ColunaFiltravel<VeiculoSemPontuar> campo="modelo" label="Veículo" ordenacao={ord} setOrdenacao={setOrd} filtro={filtroVeiculo} setFiltro={setFiltroVeiculo} valoresUnicos={valoresVeiculo} />
               <ColunaFiltravel<VeiculoSemPontuar> campo="tipo_veiculo" label="Tipo" ordenacao={ord} setOrdenacao={setOrd} filtro={filtroTipo} setFiltro={setFiltroTipo} valoresUnicos={valoresTipo} />
-              <ColunaFiltravel<VeiculoSemPontuar> campo="situacao_sga" label="Situação" ordenacao={ord} setOrdenacao={setOrd} filtro={filtroSituacao} setFiltro={setFiltroSituacao} valoresUnicos={valoresSituacao} />
               <ThCell campo="ultima_pontuacao" label="Último ponto" ordenacao={ord} toggle={toggle} />
               <ThCell campo="dias_sem_pontuar" label="Sem pontuar" ordenacao={ord} toggle={toggle} />
               <ThCell campo="nome_associado" label="Associado" ordenacao={ord} toggle={toggle} />
@@ -668,7 +665,7 @@ function TabelaSemPontuar({ veiculos, selecionados, setSelecionados }: {
           </thead>
           <tbody className="divide-y divide-blue-500/5">
             {filtrados.length === 0 ? (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500 text-sm">Nenhum veículo encontrado</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500 text-sm">Nenhum veículo encontrado</td></tr>
             ) : filtrados.map((v, i) => {
               const sel = selecionados.has(v.placa);
               return (
@@ -683,7 +680,6 @@ function TabelaSemPontuar({ veiculos, selecionados, setSelecionados }: {
                   <div className="text-xs text-gray-500">{v.marca}</div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-400">{v.tipo_veiculo || '—'}</td>
-                <td className="px-4 py-3"><Badge color="zen">{v.situacao_sga || '—'}</Badge></td>
                 <td className="px-4 py-3 text-sm text-gray-400 font-mono tabular-nums">{formatarDataHora(v.ultima_pontuacao)}</td>
                 <td className="px-4 py-3">
                   <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border tabular-nums ${
