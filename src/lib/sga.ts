@@ -176,6 +176,51 @@ export async function buscarVeiculoCompleto(
   }
 }
 
+function formatarData(d: Date): string {
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
+export async function buscarUltimoPagamento(placa: string): Promise<Date | null> {
+  const JANELA = 200;
+  const MAX_JANELAS = 3; // até 600 dias (~2 anos) para trás
+  const hoje = new Date();
+
+  for (let i = 0; i < MAX_JANELAS; i++) {
+    const fim = new Date(hoje);
+    fim.setDate(fim.getDate() - i * JANELA);
+    const inicio = new Date(fim);
+    inicio.setDate(inicio.getDate() - JANELA);
+
+    try {
+      const data = await sgaRequest<unknown[]>('listar/boleto-associado-veiculo', {
+        method: 'POST',
+        body: JSON.stringify({
+          placa,
+          data_pagamento_inicial: formatarData(inicio),
+          data_pagamento_final: formatarData(fim),
+        }),
+      });
+
+      if (!Array.isArray(data) || data.length === 0) continue;
+
+      const pagos = data
+        .filter((b: unknown) => {
+          const boleto = b as { data_pagamento?: string; situacao_boleto?: string };
+          return boleto.data_pagamento && boleto.data_pagamento !== '0000-00-00' && boleto.situacao_boleto === 'BAIXADO';
+        })
+        .map((b: unknown) => new Date((b as { data_pagamento: string }).data_pagamento))
+        .filter((d: Date) => !isNaN(d.getTime()));
+
+      if (pagos.length > 0) {
+        return pagos.reduce((a: Date, b: Date) => (b > a ? b : a));
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 export async function buscarSituacaoVeiculo(placaOuChassi: string): Promise<{ situacao: string; codigo_situacao: number } | null> {
   try {
     const data = await sgaRequest<{ retorno?: { situacao: string; codigo_situacao: number } } | { situacao: string; codigo_situacao: number }>(

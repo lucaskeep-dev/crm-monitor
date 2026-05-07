@@ -1,31 +1,19 @@
 export const maxDuration = 300;
 
-import { listarSituacoesVeiculo, listarVeiculosPorSituacao } from '@/lib/sga';
+import { listarSituacoesVeiculo, listarVeiculosPorSituacao, buscarUltimoPagamento } from '@/lib/sga';
 import { RdvAbortError } from '@/lib/rdv';
 import { obterStatusVeiculoComCache, flushCacheRDV, statsCacheRDV } from '@/lib/cache-rdv';
 import { lerSituacoesConfig, salvarCacheInativos, lerCacheInativos } from '@/lib/storage';
 import { VeiculoInativoRDV } from '@/types';
 
-function calcularInativoDesde(mesReferente: string | null | undefined, diaVencimento: string | null | undefined, dataContrato: string | null | undefined): { dataInativo: string | null; dias: number | null } {
-  // 1. Tenta mes_referente (último pagamento)
-  if (mesReferente) {
-    const partes = mesReferente.split('/');
-    if (partes.length === 2) {
-      const [mes, ano] = partes;
-      const dia = Math.min(parseInt(diaVencimento ?? '1', 10) || 1, 28);
-      const data = new Date(parseInt(ano), parseInt(mes) - 1, dia);
-      if (!isNaN(data.getTime())) {
-        const dias = Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
-        if (dias >= 0) return { dataInativo: data.toISOString(), dias };
-      }
-    }
-  }
-  // 2. Fallback: data_contrato
+function diasDesde(data: Date, dataContrato: string | null | undefined): { dataInativo: string | null; dias: number | null } {
+  const dias = Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
+  if (dias >= 0) return { dataInativo: data.toISOString(), dias };
+  // fallback: data_contrato
   if (dataContrato) {
-    const data = new Date(dataContrato);
-    if (!isNaN(data.getTime())) {
-      const dias = Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
-      return { dataInativo: data.toISOString(), dias };
+    const d = new Date(dataContrato);
+    if (!isNaN(d.getTime())) {
+      return { dataInativo: d.toISOString(), dias: Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24)) };
     }
   }
   return { dataInativo: null, dias: null };
@@ -170,7 +158,9 @@ export async function GET() {
               const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined);
               if (!statusRDV.existe) return { chave: k, resultado: null };
 
-              const { dataInativo, dias } = calcularInativoDesde(v.mes_referente, v.dia_vencimento, v.data_contrato);
+              const ultimoPagamento = v.placa ? await buscarUltimoPagamento(v.placa) : null;
+              const dataBase = ultimoPagamento ?? (v.data_contrato ? new Date(v.data_contrato) : null);
+              const { dataInativo, dias } = dataBase ? diasDesde(dataBase, v.data_contrato) : { dataInativo: null, dias: null };
               const item: VeiculoInativoRDV = {
                 placa: v.placa || '',
                 chassi: v.chassi || '',
