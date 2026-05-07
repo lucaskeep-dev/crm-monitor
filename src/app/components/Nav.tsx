@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Settings, SlidersHorizontal, LogOut } from 'lucide-react';
+import { LayoutDashboard, Settings, SlidersHorizontal, LogOut, Users } from 'lucide-react';
 import ZenLogo from './ZenLogo';
 
 const LINKS = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/regras-fipe', label: 'Regras FIPE', icon: Settings },
   { href: '/configuracoes', label: 'Configurações', icon: SlidersHorizontal },
+  { href: '/usuarios', label: 'Usuários', icon: Users },
 ];
 
 export default function Nav() {
