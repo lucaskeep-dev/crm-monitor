@@ -1,20 +1,13 @@
-import { listarSituacoesVeiculo, sgaRequestRaw } from '@/lib/sga';
 import { RdvAbortError } from '@/lib/rdv';
 import { obterStatusVeiculoComCache, flushCacheRDV, statsCacheRDV } from '@/lib/cache-rdv';
 import { listarRegras, regraSeAplica, salvarCacheAusentes, lerCacheAusentes } from '@/lib/storage';
-import { VeiculoAusenteRDV, SGAVeiculo } from '@/types';
+import { obterVeiculosAtivos } from '@/lib/sga-ativos-cache';
+import { VeiculoAusenteRDV } from '@/types';
 
-export const maxDuration = 300; // 5 minutos
-
-interface SGAListarVeiculoResponse {
-  mensagem?: string;
-  total_veiculos?: number;
-  veiculos?: SGAVeiculo[];
-  error?: string[];
-}
+export const maxDuration = 300;
 
 const RDV_BATCH = 15;
-const PAGE_SIZE = 1000;
+const PERSIST_A_CADA = 150; // candidatos verificados entre cada persist parcial
 
 const lockKey = '__ausentes_stream_running';
 function isRunning(): boolean { return Boolean((globalThis as Record<string, unknown>)[lockKey]); }
@@ -46,7 +39,6 @@ export async function GET() {
         const stats = statsCacheRDV();
         send({ tipo: 'log', msg: `Cache RDV: ${stats.tamanho} veículos, ${stats.status_validos} status válidos (TTL 24h)` });
 
-        // 1. Verificar regras
         send({ tipo: 'log', msg: 'Lendo regras FIPE cadastradas...' });
         const regrasAtivas = listarRegras().filter(r => r.ativo);
 
@@ -59,30 +51,38 @@ export async function GET() {
         const totalTipos = regrasAtivas.reduce((acc, r) => acc + r.tipos.length, 0);
         send({ tipo: 'log', msg: `${regrasAtivas.length} regra(s) ativa(s) cobrindo ${totalTipos} tipo(s) de veículo` });
 
-        // 2. Descobrir código da situação ATIVO
-        send({ tipo: 'log', msg: 'Buscando situação ativa no SGA...' });
-        const todasSituacoes = await listarSituacoesVeiculo();
-        const situacaoAtiva = todasSituacoes.find(s =>
-          (s.descricao_situacao || s.situacao || '').toUpperCase() === 'ATIVO'
-        );
+        // Carrega lista de ATIVO do SGA — compartilhada com Sem Pontuar (TTL 30 min)
+        send({ tipo: 'log', msg: 'Carregando veículos ativos do SGA (cache compartilhado)...' });
+        let ultimoProgresso = 0;
+        const { veiculos: todosVeiculos, codigo_situacao_ativo, nome_situacao_ativo, total: totalSGA } =
+          await obterVeiculosAtivos((carregados, total) => {
+            // Só reporta a cada 1000 para não inundar o stream
+            if (carregados - ultimoProgresso >= 1000 || carregados === total) {
+              send({ tipo: 'log', msg: `SGA: ${carregados}/${total} veículos carregados...` });
+              ultimoProgresso = carregados;
+            }
+          });
 
-        if (!situacaoAtiva) {
-          send({ tipo: 'erro', msg: 'Situação "ATIVO" não encontrada no SGA.' });
-          controller.close();
-          return;
+        send({ tipo: 'log', msg: `${totalSGA} veículos ativos (situação: ${nome_situacao_ativo}, código ${codigo_situacao_ativo})` });
+
+        // Marca todas as placas como visitadas no SGA ativo
+        const placasSGAativo = new Set<string>();
+        for (const v of todosVeiculos) {
+          const k = (v.placa || v.chassi || '').toUpperCase().trim();
+          if (k) placasSGAativo.add(k);
         }
 
-        send({ tipo: 'log', msg: `Situação ativa: "${situacaoAtiva.descricao_situacao}" (código ${situacaoAtiva.codigo_situacao})` });
+        // Filtra candidatos pelas regras FIPE
+        const candidatos = todosVeiculos.filter(v => {
+          const codigoTipo = Number(v.codigo_tipo || v.codigo_tipo_veiculo || 0);
+          const valorFipe = Number(v.valor_fipe || 0);
+          const codigoClassificacao = Number(v.codigo_classificacao || 0);
+          return regrasAtivas.some(r => regraSeAplica(r, codigoTipo, valorFipe, codigoClassificacao));
+        });
 
-        // 3. Processar página por página — sem carregar tudo na memória
-        send({ tipo: 'log', msg: 'Buscando e processando veículos ativos página por página...' });
+        send({ tipo: 'log', msg: `${candidatos.length} candidato(s) passam pelas regras FIPE — verificando na RDV...` });
 
-        let inicio = 0;
-        let totalSGA = 0;
-        let paginaNum = 0;
-        let candidatosTotal = 0;
-
-        // Carrega cache anterior — preserva entradas até reprocessamento
+        // Carrega cache anterior
         const cacheAnterior = lerCacheAusentes();
         const mapaResultados = new Map<string, VeiculoAusenteRDV>();
         if (cacheAnterior?.veiculos) {
@@ -92,11 +92,8 @@ export async function GET() {
           }
         }
         if (mapaResultados.size > 0) {
-          send({ tipo: 'log', msg: `Cache anterior: ${mapaResultados.size} ausentes preservados — serão atualizados conforme reprocessados` });
+          send({ tipo: 'log', msg: `Cache anterior: ${mapaResultados.size} ausentes preservados` });
         }
-
-        // Coleta placas vistas no SGA ativo nesta rodada — só removemos as ausentes que NÃO foram vistas APÓS conclusão completa
-        const placasSGAativo = new Set<string>();
 
         function persistirParcial(status: 'em_progresso' | 'erro') {
           try {
@@ -106,124 +103,81 @@ export async function GET() {
               veiculos: lista,
               gerado_em: new Date().toISOString(),
               status,
-              verificados: candidatosTotal,
+              verificados: candidatos.length,
               total_alvo: totalSGA,
             });
           } catch { /* noop */ }
         }
 
-        while (true) {
-          paginaNum++;
-          const raw = await sgaRequestRaw('listar/veiculo', {
-            method: 'POST',
-            body: JSON.stringify({
-              codigo_situacao: situacaoAtiva.codigo_situacao,
-              inicio_paginacao: inicio,
-              quantidade_por_pagina: PAGE_SIZE,
-            }),
-          }) as SGAListarVeiculoResponse;
+        let candidatosVerificados = 0;
 
-          if (raw.error) {
-            throw new Error(`SGA: ${raw.mensagem || ''} — ${raw.error.join(', ')}`);
-          }
+        for (let i = 0; i < candidatos.length; i += RDV_BATCH) {
+          const batch = candidatos.slice(i, i + RDV_BATCH);
 
-          const pagina: SGAVeiculo[] = raw.veiculos || [];
-          if (totalSGA === 0 && raw.total_veiculos) totalSGA = raw.total_veiculos;
+          const checagens = await Promise.allSettled(
+            batch.map(async (v) => {
+              const k = (v.placa || v.chassi || '').toUpperCase().trim();
+              if (!k) return { chave: '', resultado: null };
 
-          if (pagina.length === 0) break;
+              const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined);
+              if (statusRDV.existe) return { chave: k, resultado: null };
 
-          // Filtrar candidatos desta página
-          const candidatosPagina = pagina.filter(v => {
-            const codigoTipo = Number(v.codigo_tipo || v.codigo_tipo_veiculo || 0);
-            const valorFipe = Number(v.valor_fipe || 0);
-            const codigoClassificacao = Number(v.codigo_classificacao || 0);
-            return regrasAtivas.some(r => regraSeAplica(r, codigoTipo, valorFipe, codigoClassificacao));
-          });
+              const codigoTipo = Number(v.codigo_tipo || v.codigo_tipo_veiculo || 0);
+              const valorFipe = Number(v.valor_fipe || 0);
 
-          candidatosTotal += candidatosPagina.length;
-          const carregados = inicio + pagina.length;
-          send({
-            tipo: 'log',
-            msg: `Página ${paginaNum}: ${carregados}/${totalSGA} veículos — ${candidatosPagina.length} candidato(s) nesta página (${candidatosTotal} total)`,
-          });
-
-          // Marca todas as placas desta página como vistas no SGA ativo
-          for (const v of pagina) {
-            const k = (v.placa || v.chassi || '').toUpperCase().trim();
-            if (k) placasSGAativo.add(k);
-          }
-
-          // Cruzar candidatos desta página com RDV em batches
-          for (let i = 0; i < candidatosPagina.length; i += RDV_BATCH) {
-            const batch = candidatosPagina.slice(i, i + RDV_BATCH);
-
-            const checagens = await Promise.allSettled(
-              batch.map(async (v) => {
-                const k = (v.placa || v.chassi || '').toUpperCase().trim();
-                if (!k) return { chave: '', resultado: null };
-
-                const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined);
-                if (statusRDV.existe) return { chave: k, resultado: null }; // não é mais ausente
-
-                const codigoTipo = Number(v.codigo_tipo || v.codigo_tipo_veiculo || 0);
-                const valorFipe = Number(v.valor_fipe || 0);
-
-                // Calcular meses ativo a partir da data_contrato
-                let meses_ativo: number | null = null;
-                if (v.data_contrato) {
-                  const dataStr = v.data_contrato.replace(/([+-]\d{2}):?(\d{2})$/, '');
-                  const dt = new Date(dataStr);
-                  if (!isNaN(dt.getTime())) {
-                    meses_ativo = Math.floor((Date.now() - dt.getTime()) / (1000 * 60 * 60 * 24 * 30));
-                  }
+              let meses_ativo: number | null = null;
+              if (v.data_contrato) {
+                const dataStr = v.data_contrato.replace(/([+-]\d{2}):?(\d{2})$/, '');
+                const dt = new Date(dataStr);
+                if (!isNaN(dt.getTime())) {
+                  meses_ativo = Math.floor((Date.now() - dt.getTime()) / (1000 * 60 * 60 * 24 * 30));
                 }
-
-                const item: VeiculoAusenteRDV = {
-                  placa: v.placa || '',
-                  chassi: v.chassi || '',
-                  modelo: v.modelo || '',
-                  marca: v.marca || '',
-                  tipo_veiculo: v.tipo || v.tipo_veiculo || String(codigoTipo),
-                  classificacao: v.categoria || '',
-                  valor_fipe: valorFipe,
-                  meses_ativo,
-                  codigo_associado: v.codigo_associado ? Number(v.codigo_associado) : null,
-                  nome_associado: v.nome_associado || null,
-                  cpf_associado: v.cpf_associado || null,
-                };
-                return { chave: k, resultado: item };
-              })
-            );
-
-            for (const r of checagens) {
-              if (r.status === 'rejected' && r.reason instanceof RdvAbortError) {
-                persistirParcial('erro');
-                throw r.reason;
               }
-              if (r.status === 'fulfilled' && r.value && r.value.chave) {
-                const { chave, resultado } = r.value;
-                if (resultado) mapaResultados.set(chave, resultado);
-                else mapaResultados.delete(chave);
-              }
+
+              const item: VeiculoAusenteRDV = {
+                placa: v.placa || '',
+                chassi: v.chassi || '',
+                modelo: v.modelo || '',
+                marca: v.marca || '',
+                tipo_veiculo: v.tipo || v.tipo_veiculo || String(codigoTipo),
+                classificacao: v.categoria || '',
+                valor_fipe: valorFipe,
+                meses_ativo,
+                codigo_associado: v.codigo_associado ? Number(v.codigo_associado) : null,
+                nome_associado: v.nome_associado || null,
+                cpf_associado: v.cpf_associado || null,
+              };
+              return { chave: k, resultado: item };
+            })
+          );
+
+          for (const r of checagens) {
+            if (r.status === 'rejected' && r.reason instanceof RdvAbortError) {
+              persistirParcial('erro');
+              throw r.reason;
+            }
+            if (r.status === 'fulfilled' && r.value && r.value.chave) {
+              const { chave, resultado } = r.value;
+              if (resultado) mapaResultados.set(chave, resultado);
+              else mapaResultados.delete(chave);
             }
           }
 
-          // Emitir progresso de RDV ao fim de cada página
+          candidatosVerificados += batch.length;
+
           send({
             tipo: 'rdv_progresso',
-            verificados: inicio + pagina.length,
-            total: totalSGA || (inicio + pagina.length),
+            verificados: candidatosVerificados,
+            total: candidatos.length,
             encontrados: mapaResultados.size,
           });
 
-          // Persistir parcial a cada página (segura contra crash/reload)
-          persistirParcial('em_progresso');
-
-          inicio += pagina.length;
-          if (pagina.length < PAGE_SIZE) break;
+          if (candidatosVerificados % PERSIST_A_CADA < RDV_BATCH) {
+            persistirParcial('em_progresso');
+          }
         }
 
-        // Após scan completo: remove entradas que não aparecem mais no SGA ativo
+        // Remove entradas que saíram do SGA ativo
         let removidosForaSGA = 0;
         for (const k of Array.from(mapaResultados.keys())) {
           if (!placasSGAativo.has(k)) { mapaResultados.delete(k); removidosForaSGA++; }
@@ -232,7 +186,7 @@ export async function GET() {
           send({ tipo: 'log', msg: `Removidas ${removidosForaSGA} entrada(s) que saíram do SGA ativo` });
         }
 
-        send({ tipo: 'log', msg: `Concluído — ${candidatosTotal} candidato(s) verificado(s), ${mapaResultados.size} sem rastreador` });
+        send({ tipo: 'log', msg: `Concluído — ${candidatosVerificados} candidato(s) verificado(s), ${mapaResultados.size} sem rastreador` });
 
         const gerado_em = new Date().toISOString();
         const resultado = Array.from(mapaResultados.values());
@@ -241,7 +195,7 @@ export async function GET() {
           veiculos: resultado,
           gerado_em,
           status: 'concluido',
-          verificados: candidatosTotal,
+          verificados: candidatosVerificados,
           total_alvo: totalSGA,
         });
         send({ tipo: 'concluido', total: resultado.length, veiculos: resultado, gerado_em });

@@ -111,7 +111,7 @@ async function refreshSemPontuar(): Promise<void> {
   }
 }
 
-// Roda os 3 relatórios sequencialmente. Detecta blacklist via status do cache pós-execução.
+// Roda inativos primeiro; depois ausentes + sem-pontuar juntos (compartilham lista SGA ATIVO).
 async function executarCiclo(): Promise<{ blacklisted: boolean }> {
   const localDisponivel = rdvLocalDisponivel();
 
@@ -121,16 +121,17 @@ async function executarCiclo(): Promise<{ blacklisted: boolean }> {
     if (check.blacklisted) return { blacklisted: true };
   }
 
-  await refreshAusentes();
-  if (!localDisponivel && lerStatus('cache-ausentes.json').status === 'erro') {
-    const check = await verificarBlacklistRDV();
-    if (check.blacklisted) return { blacklisted: true };
-  }
+  // Ausentes e Sem Pontuar usam a mesma lista de veículos ATIVO do SGA (cache 30 min).
+  // O primeiro a rodar busca do SGA e salva o cache; o segundo lê do cache.
+  await Promise.all([refreshAusentes(), refreshSemPontuar()]);
 
-  await refreshSemPontuar();
-  if (!localDisponivel && lerStatus('cache-sem-pontuar.json').status === 'erro') {
-    const check = await verificarBlacklistRDV();
-    if (check.blacklisted) return { blacklisted: true };
+  if (!localDisponivel) {
+    const erroAusentes = lerStatus('cache-ausentes.json').status === 'erro';
+    const erroSemPontuar = lerStatus('cache-sem-pontuar.json').status === 'erro';
+    if (erroAusentes || erroSemPontuar) {
+      const check = await verificarBlacklistRDV();
+      if (check.blacklisted) return { blacklisted: true };
+    }
   }
 
   return { blacklisted: false };
