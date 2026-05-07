@@ -16,6 +16,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Multipart form-data: não modifica a request para não corromper o corpo do upload
+  const contentType = req.headers.get('content-type') || '';
+  if (contentType.includes('multipart/form-data')) {
+    return NextResponse.next();
+  }
+
   const usuario = extrairUsuario(token) ?? '';
   const headers = new Headers(req.headers);
   headers.set('x-usuario', usuario);

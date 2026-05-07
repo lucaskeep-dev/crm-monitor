@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { salvarRdvLocal, RdvVeiculoLocal, RdvLocalData } from '@/lib/rdv-local';
 import { registrarLog } from '@/lib/logs';
+import { extrairUsuario, COOKIE_NAME } from '@/lib/auth';
 
 export const maxDuration = 60;
 
@@ -83,7 +84,8 @@ export async function POST(req: NextRequest) {
     };
 
     salvarRdvLocal(data);
-    registrarLog(req.headers.get('x-usuario') || 'desconhecido', 'importar_rdv', `${veiculos.length} veículos — ${file.name}`);
+    const usuario = req.headers.get('x-usuario') || extrairUsuario(req.cookies.get(COOKIE_NAME)?.value) || 'desconhecido';
+    registrarLog(usuario, 'importar_rdv', `${veiculos.length} veículos — ${file.name}`);
 
     return NextResponse.json({ ok: true, total: veiculos.length, importado_em: data.importado_em });
   } catch (e) {
