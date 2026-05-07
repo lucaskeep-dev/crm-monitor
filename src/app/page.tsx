@@ -1367,6 +1367,7 @@ export default function Dashboard() {
   const [rdvLocal, setRdvLocal] = useState<{ total: number; importado_em: string } | null>(null);
   const [importando, setImportando] = useState(false);
   const [ignoradosAusentes, setIgnoradosAusentes] = useState<Set<string>>(new Set());
+  const [rescanTrigger, setRescanTrigger] = useState(0);
 
   useEffect(() => {
     fetch('/api/rdv/local-stats').then(r => r.json()).then(d => { if (d.ok) setRdvLocal(d); }).catch(() => {});

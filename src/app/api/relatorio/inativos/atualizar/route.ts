@@ -36,7 +36,7 @@ export async function GET() {
         batch.map(async (v) => {
           const k = (v.placa || v.chassi || '').toUpperCase().trim();
           if (!k) return { chave: k, remover: false };
-          const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined, v.cpf_associado || undefined);
+          const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined);
           return { chave: k, remover: !statusRDV.existe };
         })
       );

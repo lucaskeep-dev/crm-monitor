@@ -154,7 +154,7 @@ export async function GET() {
               const k = (v.placa || v.chassi || '').toUpperCase().trim();
               if (!k) return { chave: '', resultado: null };
               const cpf = v.cpf_associado || undefined;
-              const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined, cpf);
+              const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined);
               if (!statusRDV.existe) return { chave: k, resultado: null };
 
               const { dataInativo, dias } = calcularInativoDesde(v.mes_referente, v.dia_vencimento);

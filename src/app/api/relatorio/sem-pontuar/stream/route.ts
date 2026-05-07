@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
                   const k = (v.placa || v.chassi || '').toUpperCase().trim();
                   if (!k) return { chave: '', resultado: null };
                   const cpf = v.cpf_associado || undefined;
-                  const posicao = await obterUltimaPosicaoComCache(v.placa || undefined, v.chassi || undefined, cpf);
+                  const posicao = await obterUltimaPosicaoComCache(v.placa || undefined, v.chassi || undefined);
 
                   // Veículo não existe na RDV — não é caso "sem pontuar"
                   if (!posicao.existe) return { chave: k, resultado: null };

@@ -38,7 +38,7 @@ export async function GET(request: Request) {
         batch.map(async (v) => {
           const k = (v.placa || v.chassi || '').toUpperCase().trim();
           if (!k) return { chave: k, resultado: null as VeiculoSemPontuar | null };
-          const posicao = await obterUltimaPosicaoComCache(v.placa || undefined, v.chassi || undefined, v.cpf_associado || undefined);
+          const posicao = await obterUltimaPosicaoComCache(v.placa || undefined, v.chassi || undefined);
 
           if (!posicao.existe) return { chave: k, resultado: null };
 
