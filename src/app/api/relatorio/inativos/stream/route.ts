@@ -6,17 +6,18 @@ import { obterStatusVeiculoComCache, flushCacheRDV, statsCacheRDV } from '@/lib/
 import { lerSituacoesConfig, salvarCacheInativos, lerCacheInativos } from '@/lib/storage';
 import { VeiculoInativoRDV } from '@/types';
 
-function calcularDiasInativo(dataContrato: string | null | undefined): number | null {
-  if (!dataContrato) return null;
-  const partes = dataContrato.includes('/') ? dataContrato.split('/') : null;
-  let data: Date;
-  if (partes && partes.length === 3) {
-    data = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
-  } else {
-    data = new Date(dataContrato);
-  }
-  if (isNaN(data.getTime())) return null;
-  return Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
+function calcularInativoDesde(mesReferente: string | null | undefined, diaVencimento: string | null | undefined): { dataInativo: string | null; dias: number | null } {
+  if (!mesReferente) return { dataInativo: null, dias: null };
+  const partes = mesReferente.split('/');
+  if (partes.length !== 2) return { dataInativo: null, dias: null };
+  const [mes, ano] = partes;
+  const dia = Math.min(parseInt(diaVencimento ?? '1', 10) || 1, 28);
+  const ultimoPagamento = new Date(parseInt(ano), parseInt(mes) - 1, dia);
+  if (isNaN(ultimoPagamento.getTime())) return { dataInativo: null, dias: null };
+  const inativoDesde = new Date(ultimoPagamento);
+  inativoDesde.setMonth(inativoDesde.getMonth() + 1);
+  const dias = Math.floor((Date.now() - inativoDesde.getTime()) / (1000 * 60 * 60 * 24));
+  return { dataInativo: inativoDesde.toISOString(), dias };
 }
 
 // Lock global por endpoint — impede que duas execuções simultâneas dividam o throttle RDV
@@ -158,6 +159,7 @@ export async function GET() {
               const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined, cpf);
               if (!statusRDV.existe) return { chave: k, resultado: null };
 
+              const { dataInativo, dias } = calcularInativoDesde(v.mes_referente, v.dia_vencimento);
               const item: VeiculoInativoRDV = {
                 placa: v.placa || '',
                 chassi: v.chassi || '',
@@ -165,8 +167,8 @@ export async function GET() {
                 marca: v.marca || '',
                 tipo_veiculo: v.tipo || v.tipo_veiculo || String(v.codigo_tipo || v.codigo_tipo_veiculo || ''),
                 situacao_sga: situacaoNome,
-                data_contrato: v.data_contrato || null,
-                dias_inativo: calcularDiasInativo(v.data_contrato),
+                data_contrato: dataInativo,
+                dias_inativo: dias,
                 codigo_associado: v.codigo_associado ? Number(v.codigo_associado) : null,
                 nome_associado: v.nome_associado || null,
                 cpf_associado: v.cpf_associado || null,

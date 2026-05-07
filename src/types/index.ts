@@ -21,6 +21,8 @@ export interface SGAVeiculo {
   data_contrato?: string;
   data_contrato_final?: string;
   data_cadastro?: string;
+  mes_referente?: string;
+  dia_vencimento?: string;
   codigo_associado?: string | number;
   nome_associado?: string;
   cpf_associado?: string;
