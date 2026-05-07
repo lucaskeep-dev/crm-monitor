@@ -688,14 +688,19 @@ function TabelaSemPontuar({ veiculos, selecionados, setSelecionados }: {
                 <td className="px-4 py-3 text-sm text-gray-400">{v.tipo_veiculo || '—'}</td>
                 <td className="px-4 py-3 text-sm text-gray-400 font-mono tabular-nums">{formatarDataHora(v.ultima_pontuacao)}</td>
                 <td className="px-4 py-3">
-                  <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border tabular-nums ${
-                    v.dias_sem_pontuar === null ? 'bg-red-500/10 text-red-300 border-red-500/20'
-                    : v.dias_sem_pontuar >= 90 ? 'bg-red-500/10 text-red-300 border-red-500/20'
-                    : v.dias_sem_pontuar >= 30 ? 'bg-orange-500/10 text-orange-300 border-orange-500/20'
-                    : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
-                  }`}>
-                    <Clock size={11} />{formatarDias(v.dias_sem_pontuar)}
-                  </div>
+                  {v.dias_sem_pontuar === null ? (
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border bg-red-500/10 text-red-300 border-red-500/20">
+                      Nunca conectou
+                    </div>
+                  ) : (
+                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border tabular-nums ${
+                      v.dias_sem_pontuar >= 90 ? 'bg-red-500/10 text-red-300 border-red-500/20'
+                      : v.dias_sem_pontuar >= 30 ? 'bg-orange-500/10 text-orange-300 border-orange-500/20'
+                      : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+                    }`}>
+                      <Clock size={11} />{formatarDias(v.dias_sem_pontuar)}
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-sm">
                   <div className="text-gray-200">{v.nome_associado || '—'}</div>
@@ -1414,7 +1419,7 @@ function PainelRelatorio({ state, tipo, ignorados, onIgnorar, onDesignorar }: {
 // ============================================================================
 export default function Dashboard() {
   const [abaAtiva, setAbaAtiva] = useState<Aba>('inativos');
-  const [diasSemPontuar, setDiasSemPontuar] = useState(1);
+  const [diasSemPontuar, setDiasSemPontuar] = useState(7);
   const [rdvLocal, setRdvLocal] = useState<{ total: number; importado_em: string } | null>(null);
   const [importando, setImportando] = useState(false);
   const [ignoradosAusentes, setIgnoradosAusentes] = useState<Set<string>>(new Set());
