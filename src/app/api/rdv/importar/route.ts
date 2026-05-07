@@ -49,6 +49,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, erro: 'Colunas "Placa" e "Chassi" não encontradas na planilha' }, { status: 400 });
     }
 
+    function parseStr(row: unknown[], i: number): string {
+      if (i < 0 || i >= row.length) return '';
+      const v = String(row[i] ?? '').trim();
+      return v === 'Não informado' ? '' : v;
+    }
+
     const veiculos: RdvVeiculoLocal[] = [];
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i] as unknown[];
@@ -63,6 +69,9 @@ export async function POST(req: NextRequest) {
         bloqueio: idx.bloqueio >= 0 ? String(row[idx.bloqueio] ?? '').trim() === 'Sim' : false,
         cliente: idx.cliente >= 0 ? String(row[idx.cliente] ?? '').trim() : '',
         cpfCnpj: idx.cpfCnpj >= 0 ? String(row[idx.cpfCnpj] ?? '').trim() : '',
+        imei: parseStr(row, 27),       // coluna AB (índice 27)
+        serialChip: parseStr(row, 32), // coluna AG (índice 32)
+        numeroChip: parseStr(row, 33), // coluna AH (índice 33)
       });
     }
 

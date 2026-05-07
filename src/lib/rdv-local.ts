@@ -10,6 +10,9 @@ export interface RdvVeiculoLocal {
   bloqueio: boolean;
   cliente: string;
   cpfCnpj: string;
+  imei?: string;
+  serialChip?: string;
+  numeroChip?: string;
 }
 
 export interface RdvLocalData {

@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   AlertTriangle, CarFront, ChevronDown, ChevronUp, Clock, Search,
   CheckCircle2, XCircle, Loader2, Database, WifiOff, Zap, Activity, Terminal,
-  Send, X, Mail, MessageCircle, ExternalLink, Upload,
+  Send, X, Mail, MessageCircle, ExternalLink, Upload, Download,
 } from 'lucide-react';
 import {
   RelatorioInativos, RelatorioAusentes, RelatorioSemPontuar,
@@ -267,6 +267,8 @@ function TabelaInativos({ veiculos }: { veiculos: VeiculoInativoRDV[] }) {
   const [filtroVeiculo, setFiltroVeiculo] = useState<Set<string>>(new Set());
   const [filtroTipo, setFiltroTipo] = useState<Set<string>>(new Set());
   const [filtroSituacao, setFiltroSituacao] = useState<Set<string>>(new Set());
+  const [mesesMinCSV, setMesesMinCSV] = useState(0);
+  const [exportando, setExportando] = useState(false);
 
   const valoresVeiculo = useMemo(
     () => Array.from(new Set(veiculos.map(v => v.modelo).filter((s): s is string => Boolean(s)))),
@@ -295,9 +297,54 @@ function TabelaInativos({ veiculos }: { veiculos: VeiculoInativoRDV[] }) {
   });
   const toggle = (c: keyof VeiculoInativoRDV) => setOrd(o => ({ campo: c, dir: o.campo === c && o.dir === 'asc' ? 'desc' : 'asc' }));
 
+  async function exportarCSV() {
+    setExportando(true);
+    try {
+      const url = `/api/relatorio/inativos/exportar-csv${mesesMinCSV > 0 ? `?mesesMinimo=${mesesMinCSV}` : ''}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ erro: 'Erro ao gerar CSV' }));
+        alert(err.erro || 'Erro ao gerar CSV');
+        return;
+      }
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = res.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] ?? 'inativos.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } finally {
+      setExportando(false);
+    }
+  }
+
   return (
     <div>
-      <div className="mb-4"><SearchInput value={busca} onChange={setBusca} placeholder="Buscar por placa, modelo, nome ou CPF..." /></div>
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[200px]"><SearchInput value={busca} onChange={setBusca} placeholder="Buscar por placa, modelo, nome ou CPF..." /></div>
+        <div className="flex items-center gap-2">
+          <select
+            value={mesesMinCSV}
+            onChange={e => setMesesMinCSV(Number(e.target.value))}
+            className="text-sm bg-white/[0.06] border border-blue-500/20 rounded-lg px-3 py-2 text-gray-300 focus:outline-none focus:border-blue-500/40"
+          >
+            <option value={0}>Todos os meses</option>
+            <option value={1}>Mín. 1 mês</option>
+            <option value={3}>Mín. 3 meses</option>
+            <option value={6}>Mín. 6 meses</option>
+            <option value={12}>Mín. 12 meses</option>
+            <option value={24}>Mín. 24 meses</option>
+          </select>
+          <button
+            onClick={exportarCSV}
+            disabled={exportando || veiculos.length === 0}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600/80 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-white"
+          >
+            {exportando ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+            {exportando ? 'Gerando...' : 'Exportar CSV'}
+          </button>
+        </div>
+      </div>
       <div className="overflow-x-auto rounded-xl border border-blue-500/10 bg-white/[0.02] backdrop-blur">
         <table className="min-w-full divide-y divide-blue-500/10">
           <thead className="bg-white/[0.03]">
