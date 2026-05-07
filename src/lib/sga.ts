@@ -182,7 +182,7 @@ function formatarData(d: Date): string {
 
 export async function buscarUltimoPagamento(placa: string): Promise<Date | null> {
   const JANELA = 200;
-  const MAX_JANELAS = 3; // até 600 dias (~2 anos) para trás
+  const MAX_JANELAS = 6; // até 1200 dias (~3 anos) para trás
   const hoje = new Date();
 
   for (let i = 0; i < MAX_JANELAS; i++) {
