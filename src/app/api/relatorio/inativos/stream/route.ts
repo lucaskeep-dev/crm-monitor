@@ -160,8 +160,13 @@ export async function GET(req: Request) {
               const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined);
               if (!statusRDV.existe) return { chave: k, resultado: null };
 
-              const ultimoPagamento = v.placa ? await buscarUltimoPagamento(v.placa) : null;
-              const dataBase = ultimoPagamento ?? (v.data_contrato ? new Date(v.data_contrato) : null);
+              const identificador = v.placa || v.chassi;
+              const ultimoPagamento = identificador ? await buscarUltimoPagamento(identificador) : null;
+              // Fallback: data_contrato_final (fim do contrato) > data_contrato (início do contrato)
+              const dataFallback = v.data_contrato_final
+                ? new Date(v.data_contrato_final)
+                : v.data_contrato ? new Date(v.data_contrato) : null;
+              const dataBase = ultimoPagamento ?? dataFallback;
               const { dataInativo, dias } = dataBase ? diasDesde(dataBase, v.data_contrato) : { dataInativo: null, dias: null };
               const item: VeiculoInativoRDV = {
                 placa: v.placa || '',

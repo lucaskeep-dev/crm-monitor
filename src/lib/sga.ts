@@ -180,7 +180,7 @@ function formatarData(d: Date): string {
   return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
-export async function buscarUltimoPagamento(placa: string): Promise<Date | null> {
+export async function buscarUltimoPagamento(placaOuChassi: string): Promise<Date | null> {
   const JANELA = 200;
   const MAX_JANELAS = 6; // até 1200 dias (~3 anos) para trás
   const hoje = new Date();
@@ -195,7 +195,7 @@ export async function buscarUltimoPagamento(placa: string): Promise<Date | null>
       const data = await sgaRequest<unknown[]>('listar/boleto-associado-veiculo', {
         method: 'POST',
         body: JSON.stringify({
-          placa,
+          placa: placaOuChassi, // SGA aceita placa ou chassi neste campo
           data_pagamento_inicial: formatarData(inicio),
           data_pagamento_final: formatarData(fim),
         }),
