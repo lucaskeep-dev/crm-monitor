@@ -17,7 +17,7 @@ function formatarDuracao(dias: number | null): string {
 
 function csvEscapar(v: string | null | undefined): string {
   const s = v ?? '';
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+  if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes(';')) {
     return `"${s.replace(/"/g, '""')}"`;
   }
   return s;
@@ -33,13 +33,17 @@ export async function GET(req: NextRequest) {
   }
 
   const diasMinimo = mesesMinimo * 30;
-  const filtrados = cache.veiculos.filter(v => {
-    if (mesesMinimo <= 0) return true;
-    return (v.dias_inativo ?? 0) >= diasMinimo;
-  });
+  const filtrados = cache.veiculos
+    .filter(v => {
+      if (mesesMinimo <= 0) return true;
+      // null = sem data calculável → inclui sempre (não sabemos quando ficou inativo)
+      if (v.dias_inativo === null) return true;
+      return v.dias_inativo >= diasMinimo;
+    })
+    .sort((a, b) => (b.dias_inativo ?? Infinity) - (a.dias_inativo ?? Infinity)); // maior tempo primeiro
 
-  const headers = ['Placa', 'Nome', 'Tempo Inativo', 'IMEI', 'Serial Chip', 'Número Chip', 'Última Conexão'];
-  const linhas: string[] = [headers.join(',')];
+  const headers = ['Placa', 'Chassi', 'Veículo', 'Marca', 'Tipo', 'Situação SGA', 'Associado', 'CPF/CNPJ', 'Tempo Inativo', 'IMEI', 'Serial Chip', 'Número Chip', 'Última Conexão RDV'];
+  const linhas: string[] = [headers.join(';')];
 
   for (const v of filtrados) {
     const rdv = consultarRdvLocal(v.placa || undefined, v.chassi || undefined);
@@ -50,14 +54,20 @@ export async function GET(req: NextRequest) {
       : '';
 
     linhas.push([
-      csvEscapar(v.placa || v.chassi),
+      csvEscapar(v.placa),
+      csvEscapar(v.chassi),
+      csvEscapar(v.modelo),
+      csvEscapar(v.marca),
+      csvEscapar(v.tipo_veiculo),
+      csvEscapar(v.situacao_sga),
       csvEscapar(v.nome_associado),
+      csvEscapar(v.cpf_associado),
       csvEscapar(formatarDuracao(v.dias_inativo)),
       csvEscapar(local?.imei),
       csvEscapar(local?.serialChip),
       csvEscapar(local?.numeroChip),
       csvEscapar(ultimaConexao),
-    ].join(','));
+    ].join(';'));
   }
 
   registrarLog(req.headers.get('x-usuario') || 'desconhecido', 'exportar_csv_inativos', `${filtrados.length} registros${mesesMinimo > 0 ? `, mín. ${mesesMinimo} meses` : ''}`);
