@@ -323,18 +323,18 @@ function TabelaInativos({ veiculos }: { veiculos: VeiculoInativoRDV[] }) {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-[200px]"><SearchInput value={busca} onChange={setBusca} placeholder="Buscar por placa, modelo, nome ou CPF..." /></div>
         <div className="flex items-center gap-2">
-          <select
-            value={mesesMinCSV}
-            onChange={e => setMesesMinCSV(Number(e.target.value))}
-            className="text-sm bg-white/[0.06] border border-blue-500/20 rounded-lg px-3 py-2 text-gray-300 focus:outline-none focus:border-blue-500/40"
-          >
-            <option value={0}>Todos os meses</option>
-            <option value={1}>Mín. 1 mês</option>
-            <option value={3}>Mín. 3 meses</option>
-            <option value={6}>Mín. 6 meses</option>
-            <option value={12}>Mín. 12 meses</option>
-            <option value={24}>Mín. 24 meses</option>
-          </select>
+          <div className="flex items-center gap-1.5 text-sm text-gray-400">
+            <span>Mín.</span>
+            <input
+              type="number"
+              min={0}
+              value={mesesMinCSV === 0 ? '' : mesesMinCSV}
+              onChange={e => setMesesMinCSV(Math.max(0, parseInt(e.target.value) || 0))}
+              placeholder="0"
+              className="w-16 text-sm bg-white/[0.06] border border-blue-500/20 rounded-lg px-2 py-2 text-gray-300 focus:outline-none focus:border-blue-500/40 text-center"
+            />
+            <span>meses</span>
+          </div>
           <button
             onClick={exportarCSV}
             disabled={exportando || veiculos.length === 0}
