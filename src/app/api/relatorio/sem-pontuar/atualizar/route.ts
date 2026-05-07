@@ -49,8 +49,8 @@ export async function GET(request: Request) {
             ultimaPontuacao = posicao.dataHora.toISOString();
           }
 
-          // Saiu do filtro (pontuou recentemente) → remove
-          if (diasSemPontuar === null || diasSemPontuar < diasFiltro) return { chave: k, resultado: null };
+          // Saiu do filtro (pontuou recentemente) → remove. null = nunca conectou → mantém
+          if (diasSemPontuar !== null && diasSemPontuar < diasFiltro) return { chave: k, resultado: null };
 
           return { chave: k, resultado: { ...v, dias_sem_pontuar: diasSemPontuar, ultima_pontuacao: ultimaPontuacao } as VeiculoSemPontuar };
         })

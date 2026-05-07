@@ -624,8 +624,14 @@ function TabelaSemPontuar({ veiculos, selecionados, setSelecionados }: {
       || v.marca?.toLowerCase().includes(t) || v.nome_associado?.toLowerCase().includes(t)
       || v.cpf_associado?.includes(t);
   }).sort((a, b) => {
+    const m = ord.dir === 'asc' ? 1 : -1;
+    if (ord.campo === 'dias_sem_pontuar') {
+      const na = a.dias_sem_pontuar ?? Infinity;
+      const nb = b.dias_sem_pontuar ?? Infinity;
+      return na < nb ? -m : na > nb ? m : 0;
+    }
     const va = a[ord.campo] ?? ''; const vb = b[ord.campo] ?? '';
-    const m = ord.dir === 'asc' ? 1 : -1; return va < vb ? -m : va > vb ? m : 0;
+    return va < vb ? -m : va > vb ? m : 0;
   });
   const toggle = (c: keyof VeiculoSemPontuar) => setOrd(o => ({ campo: c, dir: o.campo === c && o.dir === 'asc' ? 'desc' : 'asc' }));
 
@@ -683,8 +689,9 @@ function TabelaSemPontuar({ veiculos, selecionados, setSelecionados }: {
                 <td className="px-4 py-3 text-sm text-gray-400 font-mono tabular-nums">{formatarDataHora(v.ultima_pontuacao)}</td>
                 <td className="px-4 py-3">
                   <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border tabular-nums ${
-                    v.dias_sem_pontuar !== null && v.dias_sem_pontuar >= 90 ? 'bg-red-500/10 text-red-300 border-red-500/20'
-                    : v.dias_sem_pontuar !== null && v.dias_sem_pontuar >= 30 ? 'bg-orange-500/10 text-orange-300 border-orange-500/20'
+                    v.dias_sem_pontuar === null ? 'bg-red-500/10 text-red-300 border-red-500/20'
+                    : v.dias_sem_pontuar >= 90 ? 'bg-red-500/10 text-red-300 border-red-500/20'
+                    : v.dias_sem_pontuar >= 30 ? 'bg-orange-500/10 text-orange-300 border-orange-500/20'
                     : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
                   }`}>
                     <Clock size={11} />{formatarDias(v.dias_sem_pontuar)}
@@ -1152,7 +1159,8 @@ function PainelSemPontuar({ state, dias, setDias }: {
   useEffect(() => { setSelecionados(new Set()); }, [state.relatorio]);
 
   const veiculosFiltrados = (state.relatorio?.veiculos ?? []).filter(v => {
-    if (v.dias_sem_pontuar === null || v.dias_sem_pontuar < dias) return false;
+    // null = nunca conectou → sempre incluído independente do filtro de dias
+    if (v.dias_sem_pontuar !== null && v.dias_sem_pontuar < dias) return false;
     return true;
   });
 
@@ -1180,7 +1188,7 @@ function PainelSemPontuar({ state, dias, setDias }: {
         </div>
 
         <div className="flex-1 min-w-[200px] text-xs text-gray-500">
-          A consulta cobre todas as situações do SGA. Use os filtros nos cabeçalhos da tabela para refinar por veículo ou situação.
+          Verifica apenas veículos ATIVO no SGA. Inclui veículos que nunca se conectaram ao rastreador.
         </div>
 
         <button onClick={() => state.executar(dias)} disabled={state.carregando}
@@ -1555,7 +1563,7 @@ export default function Dashboard() {
           totalOverride={ausentes.relatorio ? ausentes.relatorio.veiculos.filter(v => !ignoradosAusentes.has((v.placa || '').toUpperCase())).length : undefined}
           onClick={() => setAbaAtiva('ausentes')} />
         <StatCard tipo="sem_pontuar" ativo={abaAtiva === 'sem_pontuar'} relatorio={semPontuar.relatorio}
-          totalOverride={semPontuar.relatorio ? semPontuar.relatorio.veiculos.filter(v => (v.dias_sem_pontuar ?? 0) >= diasSemPontuar).length : undefined}
+          totalOverride={semPontuar.relatorio ? semPontuar.relatorio.veiculos.filter(v => v.dias_sem_pontuar === null || v.dias_sem_pontuar >= diasSemPontuar).length : undefined}
           onClick={() => setAbaAtiva('sem_pontuar')} />
       </div>
 
@@ -1567,7 +1575,7 @@ export default function Dashboard() {
               const cfg = ABAS_CONFIG[key]; const Icon = cfg.icon; const ativo = abaAtiva === key;
               const rel = key === 'inativos' ? inativos.relatorio : key === 'ausentes' ? ausentes.relatorio : semPontuar.relatorio;
               const badgeCount = key === 'sem_pontuar' && semPontuar.relatorio
-                ? semPontuar.relatorio.veiculos.filter(v => (v.dias_sem_pontuar ?? 0) >= diasSemPontuar).length
+                ? semPontuar.relatorio.veiculos.filter(v => v.dias_sem_pontuar === null || v.dias_sem_pontuar >= diasSemPontuar).length
                 : key === 'ausentes' && ausentes.relatorio
                 ? ausentes.relatorio.veiculos.filter(v => !ignoradosAusentes.has((v.placa || '').toUpperCase())).length
                 : rel?.total;

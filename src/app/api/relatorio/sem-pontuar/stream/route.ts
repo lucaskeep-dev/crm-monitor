@@ -122,7 +122,8 @@ export async function GET(request: NextRequest) {
                 ultimaPontuacao = posicao.dataHora.toISOString();
               }
 
-              if (diasSemPontuar === null || diasSemPontuar < diasFiltro) return { chave: k, resultado: null };
+              // null = nunca conectou ao rastreador → inclui sempre
+              if (diasSemPontuar !== null && diasSemPontuar < diasFiltro) return { chave: k, resultado: null };
 
               const item: VeiculoSemPontuar = {
                 placa: v.placa || '',
