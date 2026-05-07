@@ -15,6 +15,7 @@ function calcularInativoDesde(mesReferente: string | null | undefined, diaVencim
   const ultimoPagamento = new Date(parseInt(ano), parseInt(mes) - 1, dia);
   if (isNaN(ultimoPagamento.getTime())) return { dataInativo: null, dias: null };
   const dias = Math.floor((Date.now() - ultimoPagamento.getTime()) / (1000 * 60 * 60 * 24));
+  if (dias < 0) return { dataInativo: null, dias: null };
   return { dataInativo: ultimoPagamento.toISOString(), dias };
 }
 
