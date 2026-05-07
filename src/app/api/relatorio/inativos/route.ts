@@ -62,7 +62,7 @@ export async function GET() {
             situacao_sga: situacao.descricao_situacao || situacao.situacao,
             data_contrato: v.data_contrato || null,
             dias_inativo: calcularDiasInativo(v.data_contrato),
-            codigo_associado: v.codigo_associado || null,
+            codigo_associado: v.codigo_associado ? Number(v.codigo_associado) : null,
             nome_associado: v.nome_associado || null,
             cpf_associado: v.cpf_associado || null,
             status_rdv: statusRDV.ativo ? 'Ativo na RDV' : 'Inativo na RDV',
