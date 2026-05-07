@@ -26,6 +26,10 @@ export async function POST(req: NextRequest) {
       registrarLog(usuario, 'login_falhou', 'Senha incorreta');
       return NextResponse.json({ ok: false, erro: 'Usuário ou senha incorretos' }, { status: 401 });
     }
+    // Atualiza último acesso
+    salvarUsuarios(usuarios.map(u2 =>
+      u2.id === u.id ? { ...u2, ultimoAcesso: new Date().toISOString() } : u2
+    ));
   }
 
   registrarLog(usuario, 'login');

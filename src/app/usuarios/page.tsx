@@ -7,6 +7,7 @@ interface UsuarioItem {
   id: string;
   usuario: string;
   criadoEm: string;
+  ultimoAcesso?: string;
 }
 
 function formatarData(iso: string) {
@@ -124,7 +125,12 @@ export default function UsuariosPage() {
           <div key={u.id} className="px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1">
               <div className="text-sm font-medium text-white">{u.usuario}</div>
-              <div className="text-xs text-gray-500 mt-0.5">Criado em {formatarData(u.criadoEm)}</div>
+              <div className="text-xs text-gray-500 mt-0.5">
+                Criado em {formatarData(u.criadoEm)}
+                {u.ultimoAcesso && (
+                  <span className="ml-3 text-blue-400/70">· Último acesso: {formatarData(u.ultimoAcesso)}</span>
+                )}
+              </div>
             </div>
 
             {editandoId === u.id ? (

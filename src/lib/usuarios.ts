@@ -8,6 +8,7 @@ export interface Usuario {
   usuario: string;
   senhaHash: string; // pbkdf2:saltHex:hashHex
   criadoEm: string;
+  ultimoAcesso?: string;
 }
 
 export function lerUsuarios(): Usuario[] {

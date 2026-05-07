@@ -3,7 +3,7 @@ import { lerUsuarios, salvarUsuarios, hashSenha } from '@/lib/usuarios';
 import { registrarLog } from '@/lib/logs';
 
 export async function GET() {
-  const usuarios = lerUsuarios().map(({ id, usuario, criadoEm }) => ({ id, usuario, criadoEm }));
+  const usuarios = lerUsuarios().map(({ id, usuario, criadoEm, ultimoAcesso }) => ({ id, usuario, criadoEm, ultimoAcesso }));
   return NextResponse.json(usuarios);
 }
 
