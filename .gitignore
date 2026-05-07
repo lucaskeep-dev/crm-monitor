@@ -40,4 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-data/cache-rdv.json
+data/cache-*.json
+data/logs.json
