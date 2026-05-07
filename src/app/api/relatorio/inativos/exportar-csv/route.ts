@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
       : '';
 
     linhas.push([
-      csvEscapar(v.placa),
+      csvEscapar(v.placa || v.chassi),
       csvEscapar(v.nome_associado),
       csvEscapar(formatarDuracao(v.dias_inativo)),
       csvEscapar(local?.imei),
