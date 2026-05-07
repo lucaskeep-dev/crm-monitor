@@ -12,10 +12,8 @@ function calcularInativoDesde(mesReferente: string | null | undefined, diaVencim
   const dia = Math.min(parseInt(diaVencimento ?? '1', 10) || 1, 28);
   const ultimoPagamento = new Date(parseInt(ano), parseInt(mes) - 1, dia);
   if (isNaN(ultimoPagamento.getTime())) return { dataInativo: null, dias: null };
-  const inativoDesde = new Date(ultimoPagamento);
-  inativoDesde.setMonth(inativoDesde.getMonth() + 1);
-  const dias = Math.floor((Date.now() - inativoDesde.getTime()) / (1000 * 60 * 60 * 24));
-  return { dataInativo: inativoDesde.toISOString(), dias };
+  const dias = Math.floor((Date.now() - ultimoPagamento.getTime()) / (1000 * 60 * 60 * 24));
+  return { dataInativo: ultimoPagamento.toISOString(), dias };
 }
 
 export async function GET() {
