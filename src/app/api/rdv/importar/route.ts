@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { salvarRdvLocal, RdvVeiculoLocal, RdvLocalData } from '@/lib/rdv-local';
+import { registrarLog } from '@/lib/logs';
 
 export const maxDuration = 60;
 
@@ -82,6 +83,7 @@ export async function POST(req: NextRequest) {
     };
 
     salvarRdvLocal(data);
+    registrarLog(req.headers.get('x-usuario') || 'desconhecido', 'importar_rdv', `${veiculos.length} veículos — ${file.name}`);
 
     return NextResponse.json({ ok: true, total: veiculos.length, importado_em: data.importado_em });
   } catch (e) {

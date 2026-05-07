@@ -5,6 +5,7 @@ import { RdvAbortError } from '@/lib/rdv';
 import { obterStatusVeiculoComCache, flushCacheRDV, statsCacheRDV } from '@/lib/cache-rdv';
 import { lerSituacoesConfig, salvarCacheInativos, lerCacheInativos } from '@/lib/storage';
 import { VeiculoInativoRDV } from '@/types';
+import { registrarLog } from '@/lib/logs';
 
 function diasDesde(data: Date, dataContrato: string | null | undefined): { dataInativo: string | null; dias: number | null } {
   const dias = Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
@@ -24,7 +25,8 @@ const lockKey = '__inativos_stream_running';
 function isRunning(): boolean { return Boolean((globalThis as Record<string, unknown>)[lockKey]); }
 function setRunning(v: boolean) { (globalThis as Record<string, unknown>)[lockKey] = v; }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const usuario = (req as unknown as { headers: { get(k: string): string | null } }).headers.get('x-usuario') || 'desconhecido';
   const encoder = new TextEncoder();
 
   if (isRunning()) {
@@ -216,8 +218,10 @@ export async function GET() {
           verificados,
           total_alvo: todosVeiculos.length,
         });
+        registrarLog(usuario, 'relatorio_inativos', `${resultado.length} inativos encontrados`);
         send({ tipo: 'concluido', total: resultado.length, veiculos: resultado, gerado_em });
       } catch (err) {
+        registrarLog(usuario, 'relatorio_inativos_erro', String(err));
         send({ tipo: 'erro', msg: String(err) });
       } finally {
         try { flushCacheRDV(); } catch { /* noop */ }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { lerUsuarios, salvarUsuarios, hashSenha } from '@/lib/usuarios';
+import { registrarLog } from '@/lib/logs';
 
 export async function GET() {
   const usuarios = lerUsuarios().map(({ id, usuario, criadoEm }) => ({ id, usuario, criadoEm }));
@@ -24,5 +25,6 @@ export async function POST(req: NextRequest) {
     criadoEm: new Date().toISOString(),
   };
   salvarUsuarios([...lista, novo]);
+  registrarLog(req.headers.get('x-usuario') || 'desconhecido', 'criar_usuario', `Novo usuário: ${novo.usuario}`);
   return NextResponse.json({ ok: true, id: novo.id, usuario: novo.usuario, criadoEm: novo.criadoEm });
 }

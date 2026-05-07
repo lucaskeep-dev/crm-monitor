@@ -38,6 +38,16 @@ export async function criarToken(usuario: string): Promise<string> {
   return b64encode(`${payload}|${sig}`);
 }
 
+export function extrairUsuario(token: string | undefined): string | null {
+  if (!token) return null;
+  try {
+    const decoded = b64decode(token);
+    const firstPipe = decoded.indexOf('|');
+    if (firstPipe === -1) return null;
+    return decodeURIComponent(decoded.slice(0, firstPipe));
+  } catch { return null; }
+}
+
 export async function validarToken(token: string | undefined): Promise<boolean> {
   if (!token || !process.env.AUTH_SECRET) return false;
   try {

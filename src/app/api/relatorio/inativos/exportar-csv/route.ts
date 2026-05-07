@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { lerCacheInativos } from '@/lib/storage';
 import { consultarRdvLocal } from '@/lib/rdv-local';
+import { registrarLog } from '@/lib/logs';
 
 function formatarDuracao(dias: number | null): string {
   if (dias === null || dias < 0) return '';
@@ -59,6 +60,7 @@ export async function GET(req: NextRequest) {
     ].join(','));
   }
 
+  registrarLog(req.headers.get('x-usuario') || 'desconhecido', 'exportar_csv_inativos', `${filtrados.length} registros${mesesMinimo > 0 ? `, mín. ${mesesMinimo} meses` : ''}`);
   const csv = '﻿' + linhas.join('\r\n'); // BOM para Excel reconhecer UTF-8
   const fileName = `inativos${mesesMinimo > 0 ? `_min${mesesMinimo}meses` : ''}_${new Date().toISOString().slice(0, 10)}.csv`;
 

@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { validarToken, COOKIE_NAME } from '@/lib/auth';
+import { validarToken, extrairUsuario, COOKIE_NAME } from '@/lib/auth';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (pathname === '/login' || pathname.startsWith('/api/auth/')) {
+  if (pathname === '/login' || pathname === '/api/auth/login') {
     return NextResponse.next();
   }
 
@@ -16,7 +16,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  const usuario = extrairUsuario(token) ?? '';
+  const headers = new Headers(req.headers);
+  headers.set('x-usuario', usuario);
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {

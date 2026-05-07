@@ -1,5 +1,5 @@
 {
-  "total": 588,
+  "total": 583,
   "veiculos": [
     {
       "placa": "LRF6540",
@@ -1010,7 +1010,7 @@
       "tipo_veiculo": "AUTOMOVEL (GOLD)",
       "classificacao": "PASSEIO",
       "valor_fipe": 37733,
-      "meses_ativo": 8,
+      "meses_ativo": 9,
       "codigo_associado": 1077,
       "nome_associado": "CLEUMIR MATIAS RIBEIRO",
       "cpf_associado": "02831637716"
@@ -1686,7 +1686,7 @@
       "tipo_veiculo": "AUTOMOVEL APLICATIVO (GOLD)",
       "classificacao": "ALUGUEL",
       "valor_fipe": 31876,
-      "meses_ativo": 6,
+      "meses_ativo": 7,
       "codigo_associado": 14858,
       "nome_associado": "WILLIAN DA SILVA PEREIRA",
       "cpf_associado": "16646891761"
@@ -1907,7 +1907,7 @@
       "tipo_veiculo": "AUTOMOVEL (PLATINUM)",
       "classificacao": "PASSEIO",
       "valor_fipe": 37655,
-      "meses_ativo": 6,
+      "meses_ativo": 7,
       "codigo_associado": 14968,
       "nome_associado": "NORMA CESAR CARNEIRO DE SOUZA",
       "cpf_associado": "43567134787"
@@ -2596,7 +2596,7 @@
       "tipo_veiculo": "MOTOCICLETA (GOLD)",
       "classificacao": "PASSEIO",
       "valor_fipe": 22402,
-      "meses_ativo": 5,
+      "meses_ativo": 6,
       "codigo_associado": 15462,
       "nome_associado": "ANTONIO CARLOS DA SILVA PASSOS",
       "cpf_associado": "80421466715"
@@ -2674,7 +2674,7 @@
       "tipo_veiculo": "AUTOMOVEL (GOLD)",
       "classificacao": "PASSEIO",
       "valor_fipe": 38180,
-      "meses_ativo": 5,
+      "meses_ativo": 6,
       "codigo_associado": 3596,
       "nome_associado": "JORGE WILLIAM LIMA CONCEIÇÃO",
       "cpf_associado": "05675708782"
@@ -3675,7 +3675,7 @@
       "tipo_veiculo": "AUTOMOVEL (PLATINUM)",
       "classificacao": "PASSEIO",
       "valor_fipe": 52336,
-      "meses_ativo": 4,
+      "meses_ativo": 5,
       "codigo_associado": 16309,
       "nome_associado": "CARLOS ALEXANDRE RIBEIRO",
       "cpf_associado": "05479291963"
@@ -3993,19 +3993,6 @@
       "cpf_associado": "14748119810"
     },
     {
-      "placa": "FLN3E85",
-      "chassi": "93YHSR2LAEJ758843",
-      "modelo": "DUSTER TECHROAD 2.0 HI-FLEX 16V AUT.",
-      "marca": "RENAULT",
-      "tipo_veiculo": "SUV (PLATINUM)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 49719,
-      "meses_ativo": 0,
-      "codigo_associado": 18687,
-      "nome_associado": "CLAUDIO MATHIAS PEIXOTO",
-      "cpf_associado": "02655273761"
-    },
-    {
       "placa": "LRR6A70",
       "chassi": "9BD197134F3199709",
       "modelo": "GRAND SIENA TETRAFUEL 1.4 EVO F. FLEX 8V",
@@ -4169,7 +4156,7 @@
       "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
       "classificacao": "ALUGUEL",
       "valor_fipe": 58129,
-      "meses_ativo": 3,
+      "meses_ativo": 4,
       "codigo_associado": 16817,
       "nome_associado": "JOSIELSON VIANNA DOS SANTOS",
       "cpf_associado": "16966739766"
@@ -4520,7 +4507,7 @@
       "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
       "classificacao": "ALUGUEL",
       "valor_fipe": 51225,
-      "meses_ativo": 2,
+      "meses_ativo": 3,
       "codigo_associado": 17332,
       "nome_associado": "CELSO TENÓRIO MATIAS",
       "cpf_associado": "70994293453"
@@ -4910,7 +4897,7 @@
       "tipo_veiculo": "MOTOCICLETA (GOLD)",
       "classificacao": "PASSEIO",
       "valor_fipe": 20207,
-      "meses_ativo": 1,
+      "meses_ativo": 2,
       "codigo_associado": 17806,
       "nome_associado": "FERNANDO VIEIRA SANTOS SILVA",
       "cpf_associado": "28978819842"
@@ -5215,19 +5202,6 @@
       "cpf_associado": "05342338484"
     },
     {
-      "placa": "FWS9A13",
-      "chassi": "9BGKS48G0GG270323",
-      "modelo": "ONIX HATCH LT 1.0 8V FLEXPOWER 5P MEC.",
-      "marca": "GM - CHEVROLET",
-      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
-      "classificacao": "ALUGUEL",
-      "valor_fipe": 44689,
-      "meses_ativo": 1,
-      "codigo_associado": 18109,
-      "nome_associado": "AILTON ALVES SOUSA",
-      "cpf_associado": "06767381500"
-    },
-    {
       "placa": "TUR3G72",
       "chassi": "9C2KC2210TR050279",
       "modelo": "CG 160 TITAN",
@@ -5345,19 +5319,6 @@
       "cpf_associado": "07219451717"
     },
     {
-      "placa": "PZU2H87",
-      "chassi": "9BRB29BT8J2169390",
-      "modelo": "ETIOS XS 1.5 FLEX 16V 5P AUT.",
-      "marca": "TOYOTA",
-      "tipo_veiculo": "AUTOMOVEL APLICATIVO (GOLD)",
-      "classificacao": "ALUGUEL",
-      "valor_fipe": 61957,
-      "meses_ativo": 1,
-      "codigo_associado": 11131,
-      "nome_associado": "LEANDRO DUARTE DA SILVA",
-      "cpf_associado": "10662296788"
-    },
-    {
       "placa": "LUE0536",
       "chassi": "93YCDDCH54J537733",
       "modelo": "MASTER 2.8 FURGAO 85CV DIESEL CURTO",
@@ -5434,19 +5395,6 @@
       "codigo_associado": 18267,
       "nome_associado": "UILLIS VERGNA DA SILVA",
       "cpf_associado": "08750259784"
-    },
-    {
-      "placa": "FXP0F96",
-      "chassi": "988611122GK006744",
-      "modelo": "RENEGADE1.8 4X2 FLEX 16V AUT.(PCD)",
-      "marca": "JEEP",
-      "tipo_veiculo": "AUTOMOVEL (GOLD)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 63110,
-      "meses_ativo": 0,
-      "codigo_associado": 18272,
-      "nome_associado": "MAURÍCIO DIAS BARBOSA",
-      "cpf_associado": "29799531802"
     },
     {
       "placa": "GIV1J79",
@@ -5657,19 +5605,6 @@
       "cpf_associado": "00676341764"
     },
     {
-      "placa": "FSK6D55",
-      "chassi": "93XFRH72WFCE91773",
-      "modelo": "PAJERO TR4 2.0 FLEX 16V 4X2 AUT.",
-      "marca": "MITSUBISHI",
-      "tipo_veiculo": "AUTOMOVEL (PLATINUM)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 61225,
-      "meses_ativo": 0,
-      "codigo_associado": 18373,
-      "nome_associado": "WALTER TEIXEIRA HIRSCHFELD",
-      "cpf_associado": "59528575749"
-    },
-    {
       "placa": "RAB0A73",
       "chassi": "LGXCE4CC4T2002860",
       "modelo": "DOLPHIN MINI EV",
@@ -5772,19 +5707,6 @@
       "codigo_associado": 18425,
       "nome_associado": "ANTONIO CARLOS FIDELIS DE MOURA",
       "cpf_associado": "06819941420"
-    },
-    {
-      "placa": "RIV8I27",
-      "chassi": "9C6DG3320N0063415",
-      "modelo": "XTZ 250 LANDER CAPITÃO AMÉRICA FLEX ABS",
-      "marca": "YAMAHA",
-      "tipo_veiculo": "MOTOCICLETA (GOLD)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 23623,
-      "meses_ativo": 0,
-      "codigo_associado": 18428,
-      "nome_associado": "CAUA MAZZARO KILPPEL",
-      "cpf_associado": "17872171759"
     },
     {
       "placa": "",
@@ -5904,19 +5826,6 @@
       "cpf_associado": "72524375900"
     },
     {
-      "placa": "RNA5A12",
-      "chassi": "9BD358A1NMYL25533",
-      "modelo": "ARGO 1.0 6V FLEX.",
-      "marca": "FIAT",
-      "tipo_veiculo": "AUTOMOVEL (PLATINUM)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 54984,
-      "meses_ativo": 0,
-      "codigo_associado": 18491,
-      "nome_associado": "ROGÉRIO FRANCISCO DA SILVEIRA",
-      "cpf_associado": "86603620715"
-    },
-    {
       "placa": "QSO5J42",
       "chassi": "9C2NC6110TR031559",
       "modelo": "CB 300F TWISTER ABS",
@@ -5967,19 +5876,6 @@
       "codigo_associado": 18523,
       "nome_associado": "LEANDRO ROSA RIBEIRO",
       "cpf_associado": "05241705767"
-    },
-    {
-      "placa": "TTD9D18",
-      "chassi": "LC0CE4CB8S0005068",
-      "modelo": "YUAN PLUS (ELéTRICO)",
-      "marca": "BYD",
-      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
-      "classificacao": "ALUGUEL",
-      "valor_fipe": 176755,
-      "meses_ativo": 0,
-      "codigo_associado": 18529,
-      "nome_associado": "ANDRÉ VICTOR CHEREMETTA FEIJÓO",
-      "cpf_associado": "16974454708"
     },
     {
       "placa": "SRQ3B13",
@@ -6177,19 +6073,6 @@
       "cpf_associado": "09964492723"
     },
     {
-      "placa": "LSI3787",
-      "chassi": "93XXTGA2WGCF27531",
-      "modelo": "ASX 2.0 16V 160CV AUT.",
-      "marca": "MITSUBISHI",
-      "tipo_veiculo": "AUTOMOVEL (PLATINUM)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 72929,
-      "meses_ativo": 0,
-      "codigo_associado": 18590,
-      "nome_associado": "LUCIANA CAVALCANTI BARROS GONÇALVES",
-      "cpf_associado": "03737228779"
-    },
-    {
       "placa": "MLR1H58",
       "chassi": "KNAFZ414BE5124423",
       "modelo": "CERATO 1.6 16V  FLEX  AUT.",
@@ -6242,19 +6125,6 @@
       "cpf_associado": "51364573504"
     },
     {
-      "placa": "QMT1E24",
-      "chassi": "93Y4SRFH4JJ992332",
-      "modelo": "LOGAN EXPRESSION EASY R FLEX 1.6 16V 4P",
-      "marca": "RENAULT",
-      "tipo_veiculo": "AUTOMOVEL APLICATIVO (GOLD)",
-      "classificacao": "ALUGUEL",
-      "valor_fipe": 38187,
-      "meses_ativo": 0,
-      "codigo_associado": 18615,
-      "nome_associado": "LUCIANO SILVA DE ANDRADE",
-      "cpf_associado": "05857068754"
-    },
-    {
       "placa": "QUC0C11",
       "chassi": "93Y5SRF84LJ946192",
       "modelo": "SANDERO EXPRESSION FLEX 1.0 12V 5P",
@@ -6292,19 +6162,6 @@
       "codigo_associado": 18632,
       "nome_associado": "MARCOS JOSÉ GONÇALVES DOS SANTOS",
       "cpf_associado": "02967105716"
-    },
-    {
-      "placa": "TRE5H28",
-      "chassi": "LC0CE4CC7V0001610",
-      "modelo": "DOLPHIN GS 180EV",
-      "marca": "BYD",
-      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
-      "classificacao": "ALUGUEL",
-      "valor_fipe": 149997,
-      "meses_ativo": 0,
-      "codigo_associado": 18638,
-      "nome_associado": "VICENTE PAULO STAUDT",
-      "cpf_associado": "50350480044"
     },
     {
       "placa": "LQX7I28",
@@ -6411,19 +6268,6 @@
       "cpf_associado": "10420089730"
     },
     {
-      "placa": "RKT0B12",
-      "chassi": "98861118XLK298678",
-      "modelo": "RENEGADE1.8 4X2 FLEX 16V AUT.(PCD)",
-      "marca": "JEEP",
-      "tipo_veiculo": "SUV (PLATINUM)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 73598,
-      "meses_ativo": 0,
-      "codigo_associado": 18677,
-      "nome_associado": "LEANDRO PEREIRA BRUM DE OLIVEIRA",
-      "cpf_associado": "09221797783"
-    },
-    {
       "placa": "TUF0D97",
       "chassi": "9C6DG3340S0003495",
       "modelo": "XTZ 250 LANDER CONNECTED",
@@ -6500,19 +6344,6 @@
       "codigo_associado": 18693,
       "nome_associado": "JÉSSICA DOS SANTOS CAVALCANTI",
       "cpf_associado": "12326916743"
-    },
-    {
-      "placa": "",
-      "chassi": "9C6RG7720T0056363",
-      "modelo": "FZ15 150 FAZER CONNECTED FLEX",
-      "marca": "YAMAHA",
-      "tipo_veiculo": "MOTOCICLETA (LIGHT)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 22710,
-      "meses_ativo": 0,
-      "codigo_associado": 13352,
-      "nome_associado": "VITOR MARTINS OLIVEIRA",
-      "cpf_associado": "20623604795"
     },
     {
       "placa": "LQY4D68",
@@ -6788,19 +6619,6 @@
       "cpf_associado": "11178046745"
     },
     {
-      "placa": "",
-      "chassi": "9C6RG7720T0050738",
-      "modelo": "FZ15 150 FAZER CONNECTED FLEX",
-      "marca": "YAMAHA",
-      "tipo_veiculo": "MOTOCICLETA APLICATIVO (LIGHT)",
-      "classificacao": "APLICATIVO",
-      "valor_fipe": 22710,
-      "meses_ativo": 0,
-      "codigo_associado": 18735,
-      "nome_associado": "JOAO PEDRO DA COSTA DA SILVA",
-      "cpf_associado": "16746283747"
-    },
-    {
       "placa": "TZF4F98",
       "chassi": "9C2KC2240TR001653",
       "modelo": "CG 160 TITAN 50 ANOS",
@@ -6879,32 +6697,6 @@
       "cpf_associado": "10515616710"
     },
     {
-      "placa": "SSA5E56",
-      "chassi": "9C6SG5920R0024120",
-      "modelo": "NMAX CONNECTED SE 160 ABS",
-      "marca": "YAMAHA",
-      "tipo_veiculo": "MOTOCICLETA (GOLD)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 20661,
-      "meses_ativo": 0,
-      "codigo_associado": 18742,
-      "nome_associado": "RYAN VITOR CAMPELO DA SILVA",
-      "cpf_associado": "17307501767"
-    },
-    {
-      "placa": "LLV3J72",
-      "chassi": "93HGM2520DZ123574",
-      "modelo": "CITY SEDAN LX 1.5 FLEX 16V 4P MEC.",
-      "marca": "HONDA",
-      "tipo_veiculo": "AUTOMOVEL (LIGHT)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 52268,
-      "meses_ativo": 0,
-      "codigo_associado": 5922,
-      "nome_associado": "YASMIN DE SOUZA VIEIRA SILVA",
-      "cpf_associado": "15417606707"
-    },
-    {
       "placa": "QXF2D73",
       "chassi": "9882261CBLKD13249",
       "modelo": "TORO ENDURENCE 1.8 16V FLEX AUT.",
@@ -6916,19 +6708,6 @@
       "codigo_associado": 15064,
       "nome_associado": "NILZA NERES DA SILVA",
       "cpf_associado": "04188277700"
-    },
-    {
-      "placa": "SRG8J04",
-      "chassi": "97NL20UL3RMBR5149",
-      "modelo": "TIGER 660 SPORT",
-      "marca": "TRIUMPH",
-      "tipo_veiculo": "MOTOCICLETA (GOLD)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 52456,
-      "meses_ativo": 0,
-      "codigo_associado": 18749,
-      "nome_associado": "CRISTIANO MIRA DA SILVA JUNIOR",
-      "cpf_associado": "16615260719"
     },
     {
       "placa": "LSA4216",
@@ -6983,32 +6762,6 @@
       "cpf_associado": "18644329774"
     },
     {
-      "placa": "QPY2F48",
-      "chassi": "9BWDB45U3KT074776",
-      "modelo": "VOYAGE 1.6 MSI FLEX 8V 4P",
-      "marca": "VW - VOLKSWAGEN",
-      "tipo_veiculo": "AUTOMOVEL APLICATIVO (GOLD)",
-      "classificacao": "ALUGUEL",
-      "valor_fipe": 48086,
-      "meses_ativo": 0,
-      "codigo_associado": 17761,
-      "nome_associado": "ANDERSON MACHADO DUILIO",
-      "cpf_associado": "01657213757"
-    },
-    {
-      "placa": "LMH9D35",
-      "chassi": "SALCA2BG0GH549203",
-      "modelo": "DISCOVERY SPORT HSE 2.0 4X4 AUT/ FLEX",
-      "marca": "LAND ROVER",
-      "tipo_veiculo": "AUTOMOVEL (GOLD)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 104686,
-      "meses_ativo": 0,
-      "codigo_associado": 18755,
-      "nome_associado": "PAULA ANDREIA GONÇALVES DE CAMPOS",
-      "cpf_associado": "07079563747"
-    },
-    {
       "placa": "TTE7J31",
       "chassi": "9C2ND1730SR107495",
       "modelo": "XRE 300 SAHARA RALLY",
@@ -7059,19 +6812,6 @@
       "codigo_associado": 18758,
       "nome_associado": "HENRY NASCIMENTO GOMES",
       "cpf_associado": "12649182750"
-    },
-    {
-      "placa": "LRT6B68",
-      "chassi": "9BGKT48L0FG194960",
-      "modelo": "ONIX HATCH LTZ 1.4 8V FLEXPOWER 5P AUT.",
-      "marca": "GM - CHEVROLET",
-      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
-      "classificacao": "ALUGUEL",
-      "valor_fipe": 54559,
-      "meses_ativo": 0,
-      "codigo_associado": 18759,
-      "nome_associado": "MATHEUS EVANGELHO BACK",
-      "cpf_associado": "17449092700"
     },
     {
       "placa": "OPP9E30",
@@ -7256,19 +6996,6 @@
       "cpf_associado": "07621988770"
     },
     {
-      "placa": "TUD8I97",
-      "chassi": "9C2KC2200TR457603",
-      "modelo": "CG 160 FAN FLEX",
-      "marca": "HONDA",
-      "tipo_veiculo": "MOTOCICLETA APLICATIVO (GOLD)",
-      "classificacao": "APLICATIVO",
-      "valor_fipe": 20207,
-      "meses_ativo": 0,
-      "codigo_associado": 18778,
-      "nome_associado": "ADRIANA AZEVEDO DA SILVA",
-      "cpf_associado": "01285457714"
-    },
-    {
       "placa": "SIJ5D17",
       "chassi": "9BD341ACZRY905351",
       "modelo": "MOBI LIKE 1.0 FIRE FLEX 5P.",
@@ -7438,19 +7165,6 @@
       "cpf_associado": "01048855724"
     },
     {
-      "placa": "TDL0I15",
-      "chassi": "8ADUWNFX2PG556456",
-      "modelo": "208 GRIFFE 1.6 FLEX 16V 5P AUT.",
-      "marca": "PEUGEOT",
-      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
-      "classificacao": "ALUGUEL",
-      "valor_fipe": 86031,
-      "meses_ativo": 0,
-      "codigo_associado": 18796,
-      "nome_associado": "DAVI SANTOS PASCOAL",
-      "cpf_associado": "19494151712"
-    },
-    {
       "placa": "KXB3A33",
       "chassi": "1A8FYB8B28T211210",
       "modelo": "PT CRUISER CLASSIC 2.4 16V 143CV 4P",
@@ -7551,7 +7265,7 @@
       "valor_fipe": 35875,
       "meses_ativo": 0,
       "codigo_associado": 18809,
-      "nome_associado": "FELIPE DE ALMEIDA AYUB",
+      "nome_associado": "FELIPE DE ALMEIDA AYUBI",
       "cpf_associado": "12957039710"
     },
     {
@@ -7568,19 +7282,6 @@
       "cpf_associado": "64948270000101"
     },
     {
-      "placa": "",
-      "chassi": "9C2MD411OTR009828",
-      "modelo": "XRE 190 ADVENTURE FLEX",
-      "marca": "HONDA",
-      "tipo_veiculo": "MOTOCICLETA APLICATIVO (GOLD)",
-      "classificacao": "APLICATIVO",
-      "valor_fipe": 29245,
-      "meses_ativo": 0,
-      "codigo_associado": 18815,
-      "nome_associado": "WENDEL DOS SANTOS DE PAULA",
-      "cpf_associado": "15013272750"
-    },
-    {
       "placa": "RNW2D74",
       "chassi": "9BD358A1NNYL53147",
       "modelo": "ARGO 1.0 6V FLEX.",
@@ -7592,19 +7293,6 @@
       "codigo_associado": 18817,
       "nome_associado": "GABRIEL DA SILVA FREITAS",
       "cpf_associado": "16909065700"
-    },
-    {
-      "placa": "KWU7E79",
-      "chassi": "988611151GK003715",
-      "modelo": "RENEGADE SPORT 1.8 4X2 FLEX 16V AUT.",
-      "marca": "JEEP",
-      "tipo_veiculo": "AUTOMOVEL (GOLD)",
-      "classificacao": "PASSEIO",
-      "valor_fipe": 63965,
-      "meses_ativo": 0,
-      "codigo_associado": 4148,
-      "nome_associado": "THADEU LUIZ PINHEIRO JUAREZ",
-      "cpf_associado": "11322656738"
     },
     {
       "placa": "",
@@ -7644,10 +7332,257 @@
       "codigo_associado": 18824,
       "nome_associado": "MAYCON DA COSTA LEMOS",
       "cpf_associado": "11870241711"
+    },
+    {
+      "placa": "KMT9451",
+      "chassi": "9BWEB05W48P031676",
+      "modelo": "SAVEIRO 1.6 MI/ 1.6MI CITY TOTAL FLEX 8V",
+      "marca": "VW - VOLKSWAGEN",
+      "tipo_veiculo": "SUV APLICATIVO (GOLD)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 32997,
+      "meses_ativo": 0,
+      "codigo_associado": 4644,
+      "nome_associado": "JEAN LEONARDO GUIMARÃES PEREIRA",
+      "cpf_associado": "11623137730"
+    },
+    {
+      "placa": "PXS8I21",
+      "chassi": "9BHBG41DBGP608045",
+      "modelo": "HB20S C.STYLE/C.PLUS1.6 FLEX 16V AUT. 4P",
+      "marca": "HYUNDAI",
+      "tipo_veiculo": "AUTOMOVEL (PLATINUM)",
+      "classificacao": "PASSEIO",
+      "valor_fipe": 61114,
+      "meses_ativo": 5,
+      "codigo_associado": 15880,
+      "nome_associado": "DANIELA CONSTANCIO RODRIGUES",
+      "cpf_associado": "11609754778"
+    },
+    {
+      "placa": "LLL2123",
+      "chassi": "93YRBB00XKJ554947",
+      "modelo": "KWID INTENSE 1.0 FLEX 12V 5P MEC.",
+      "marca": "RENAULT",
+      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 39113,
+      "meses_ativo": 0,
+      "codigo_associado": 18806,
+      "nome_associado": "THUANY RIBAS DORNELLAS DA SILVA",
+      "cpf_associado": "12489640712"
+    },
+    {
+      "placa": "LRM5A64",
+      "chassi": "9BD195162E0607559",
+      "modelo": "UNO WAY CELEB. 1.0 EVO FIRE FLEX 8V 5P",
+      "marca": "FIAT",
+      "tipo_veiculo": "AUTOMOVEL (PLATINUM)",
+      "classificacao": "PASSEIO",
+      "valor_fipe": 33504,
+      "meses_ativo": 0,
+      "codigo_associado": 18810,
+      "nome_associado": "DAVID NEY DA SILVA MARTINS",
+      "cpf_associado": "15683899737"
+    },
+    {
+      "placa": "MLD2D77",
+      "chassi": "935SLYFYYDB536001",
+      "modelo": "C3 TENDANCE 1.5 FLEX 8V 5P MEC.",
+      "marca": "CITROEN",
+      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 36482,
+      "meses_ativo": 0,
+      "codigo_associado": 18813,
+      "nome_associado": "LIDIANE SANTOS NOGUEIRA",
+      "cpf_associado": "02218397048"
+    },
+    {
+      "placa": "AYR7H87",
+      "chassi": "93Y4SRD64FJ544717",
+      "modelo": "LOGAN EXPRESSION HI-FLEX 1.6 8V 4P",
+      "marca": "RENAULT",
+      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 34962,
+      "meses_ativo": 0,
+      "codigo_associado": 18814,
+      "nome_associado": "ALEX DA SILVA TAVARES",
+      "cpf_associado": "32117862870"
+    },
+    {
+      "placa": "LMI0J07",
+      "chassi": "9BGJE75E0GB133693",
+      "modelo": "SPIN ACTIV 1.8 8V ECONO. FLEX 5P AUT.",
+      "marca": "GM - CHEVROLET",
+      "tipo_veiculo": "AUTOMOVEL (PLATINUM)",
+      "classificacao": "PASSEIO",
+      "valor_fipe": 57171,
+      "meses_ativo": 0,
+      "codigo_associado": 16097,
+      "nome_associado": "JOSE DA SILVA",
+      "cpf_associado": "77181204734"
+    },
+    {
+      "placa": "RVO0E44",
+      "chassi": "9BD358AFVPYM37362",
+      "modelo": "ARGO DRIVE 1.0 6V FLEX",
+      "marca": "FIAT",
+      "tipo_veiculo": "AUTOMOVEL (GOLD)",
+      "classificacao": "PASSEIO",
+      "valor_fipe": 64827,
+      "meses_ativo": 0,
+      "codigo_associado": 18826,
+      "nome_associado": "LEANDRO AZEVEDO DA SILVA",
+      "cpf_associado": "11075407710"
+    },
+    {
+      "placa": "RTZ3F91",
+      "chassi": "8AP359ACDNU202682",
+      "modelo": "CRONOS DRIVE 1.3 8V FLEX",
+      "marca": "FIAT",
+      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 66490,
+      "meses_ativo": 0,
+      "codigo_associado": 18109,
+      "nome_associado": "AILTON ALVES SOUZA",
+      "cpf_associado": "06767381500"
+    },
+    {
+      "placa": "PGR2D23",
+      "chassi": "9BGKT69L0EG179112",
+      "modelo": "PRISMA SED. LTZ 1.4 8V FLEXPOWER 4P AUT.",
+      "marca": "GM - CHEVROLET",
+      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 52514,
+      "meses_ativo": 0,
+      "codigo_associado": 17789,
+      "nome_associado": "LUIZ FERNANDO DE MENDONÇA ZAMPIER",
+      "cpf_associado": "11889254746"
+    },
+    {
+      "placa": "",
+      "chassi": "9C2KF5210TR005837",
+      "modelo": "PCX 160 ABS",
+      "marca": "HONDA",
+      "tipo_veiculo": "MOTOCICLETA (GOLD)",
+      "classificacao": "PASSEIO",
+      "valor_fipe": 21315,
+      "meses_ativo": 0,
+      "codigo_associado": 18831,
+      "nome_associado": "PATRICK DA SILVA",
+      "cpf_associado": "06633240767"
+    },
+    {
+      "placa": "RKD6I06",
+      "chassi": "9C2MC4400MR021039",
+      "modelo": "CB 250 TWISTER/FLEXONE",
+      "marca": "HONDA",
+      "tipo_veiculo": "MOTOCICLETA (GOLD)",
+      "classificacao": "PASSEIO",
+      "valor_fipe": 20165,
+      "meses_ativo": 0,
+      "codigo_associado": 18833,
+      "nome_associado": "PETERSON CLEMENTE MALDONADO",
+      "cpf_associado": "17928563770"
+    },
+    {
+      "placa": "LUE3I29",
+      "chassi": "9BD358A7HLYJ95378",
+      "modelo": "ARGO TREKKING 1.3 8V FLEX",
+      "marca": "FIAT",
+      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 67723,
+      "meses_ativo": 0,
+      "codigo_associado": 18835,
+      "nome_associado": "ANDRE LUIZ BARRETO FERREIRA",
+      "cpf_associado": "05676443758"
+    },
+    {
+      "placa": "EMG4A24",
+      "chassi": "9BWAG45U1PT031159",
+      "modelo": "GOL 1.0 FLEX 12V 5P",
+      "marca": "VW - VOLKSWAGEN",
+      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 55119,
+      "meses_ativo": 0,
+      "codigo_associado": 18638,
+      "nome_associado": "VICENTE PAULO STAUDT",
+      "cpf_associado": "50350480044"
+    },
+    {
+      "placa": "TTA2E48",
+      "chassi": "9C2KC2210SR027907",
+      "modelo": "CG 160 TITAN FLEXONE/ED.ESPECIAL 40 ANOS",
+      "marca": "HONDA",
+      "tipo_veiculo": "MOTOCICLETA (GOLD)",
+      "classificacao": "PASSEIO",
+      "valor_fipe": 20882,
+      "meses_ativo": 0,
+      "codigo_associado": 18836,
+      "nome_associado": "ROSILENE DA SILVA PEREIRA",
+      "cpf_associado": "06908135705"
+    },
+    {
+      "placa": "LPR3B59",
+      "chassi": "9BD27803MB7306247",
+      "modelo": "STRADA 1.4 MPI FIRE FLEX 8V CE",
+      "marca": "FIAT",
+      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 37872,
+      "meses_ativo": 0,
+      "codigo_associado": 18838,
+      "nome_associado": "CATARINA MARINS DA SILVA BERRIEL",
+      "cpf_associado": "09652712779"
+    },
+    {
+      "placa": "",
+      "chassi": "9C6SG9110T0033693",
+      "modelo": "NMAX CONNECTED 160 ABS",
+      "marca": "YAMAHA",
+      "tipo_veiculo": "MOTOCICLETA (LIGHT)",
+      "classificacao": "PASSEIO",
+      "valor_fipe": 22056,
+      "meses_ativo": 0,
+      "codigo_associado": 18131,
+      "nome_associado": "RAMON SANTOS DA COSTA",
+      "cpf_associado": "15619857751"
+    },
+    {
+      "placa": "PXO9E88",
+      "chassi": "93Y4SRD04GJ342169",
+      "modelo": "LOGAN EXPRES./EXP. UP HI-FLEX 1.0 16V 4P",
+      "marca": "RENAULT",
+      "tipo_veiculo": "AUTOMOVEL APLICATIVO (PLATINUM)",
+      "classificacao": "ALUGUEL",
+      "valor_fipe": 33919,
+      "meses_ativo": 0,
+      "codigo_associado": 18575,
+      "nome_associado": "LUIZ FELLIPE MACIEL DE ANDRADE PINTO",
+      "cpf_associado": "12964845727"
+    },
+    {
+      "placa": "LTL6C49",
+      "chassi": "KMHD351EBGU281003",
+      "modelo": "I30 1.8 16V AUT. 5P",
+      "marca": "HYUNDAI",
+      "tipo_veiculo": "AUTOMOVEL (GOLD)",
+      "classificacao": "PASSEIO",
+      "valor_fipe": 80059,
+      "meses_ativo": 0,
+      "codigo_associado": 18643,
+      "nome_associado": "BRENDA LIMA DOS SANTOS",
+      "cpf_associado": "17834608738"
     }
   ],
-  "gerado_em": "2026-05-05T04:45:50.388Z",
+  "gerado_em": "2026-05-06T02:12:49.019Z",
   "status": "concluido",
-  "verificados": 588,
-  "total_alvo": 588
+  "verificados": 583,
+  "total_alvo": 583
 }

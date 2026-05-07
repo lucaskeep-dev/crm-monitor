@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Settings, SlidersHorizontal, LogOut, Users } from 'lucide-react';
+import { LayoutDashboard, Settings, SlidersHorizontal, LogOut, Users, ScrollText } from 'lucide-react';
 import ZenLogo from './ZenLogo';
 
 const LINKS = [
@@ -10,6 +10,7 @@ const LINKS = [
   { href: '/regras-fipe', label: 'Regras FIPE', icon: Settings },
   { href: '/configuracoes', label: 'Configurações', icon: SlidersHorizontal },
   { href: '/usuarios', label: 'Usuários', icon: Users },
+  { href: '/logs', label: 'Logs', icon: ScrollText },
 ];
 
 export default function Nav() {
