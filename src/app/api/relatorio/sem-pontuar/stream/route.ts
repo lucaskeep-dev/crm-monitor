@@ -64,11 +64,19 @@ export async function GET(request: NextRequest) {
           mapaSituacoes.set(Number(s.codigo_situacao), s.descricao_situacao || s.situacao);
         }
 
-        // Se nenhuma situação foi passada, consulta todas
+        // Se nenhuma situação foi passada, usa apenas ATIVO
         let codigosFinal = codigosSituacao;
         if (codigosFinal.length === 0) {
-          codigosFinal = todasSituacoes.map(s => Number(s.codigo_situacao));
-          send({ tipo: 'log', msg: `Nenhuma situação especificada — consultando todas as ${codigosFinal.length} situações` });
+          const situacaoAtiva = todasSituacoes.find(s =>
+            (s.descricao_situacao || s.situacao || '').toUpperCase() === 'ATIVO'
+          );
+          if (!situacaoAtiva) {
+            send({ tipo: 'erro', msg: 'Situação "ATIVO" não encontrada no SGA.' });
+            controller.close();
+            return;
+          }
+          codigosFinal = [Number(situacaoAtiva.codigo_situacao)];
+          send({ tipo: 'log', msg: `Filtrando apenas situação ATIVO (código ${situacaoAtiva.codigo_situacao})` });
         } else {
           send({ tipo: 'log', msg: `Situações selecionadas: ${codigosFinal.length}` });
         }
