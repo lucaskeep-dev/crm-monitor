@@ -4,17 +4,27 @@ import { obterStatusVeiculo } from '@/lib/rdv';
 import { lerSituacoesConfig } from '@/lib/storage';
 import { VeiculoInativoRDV } from '@/types';
 
-function calcularInativoDesde(mesReferente: string | null | undefined, diaVencimento: string | null | undefined): { dataInativo: string | null; dias: number | null } {
-  if (!mesReferente) return { dataInativo: null, dias: null };
-  const partes = mesReferente.split('/');
-  if (partes.length !== 2) return { dataInativo: null, dias: null };
-  const [mes, ano] = partes;
-  const dia = Math.min(parseInt(diaVencimento ?? '1', 10) || 1, 28);
-  const ultimoPagamento = new Date(parseInt(ano), parseInt(mes) - 1, dia);
-  if (isNaN(ultimoPagamento.getTime())) return { dataInativo: null, dias: null };
-  const dias = Math.floor((Date.now() - ultimoPagamento.getTime()) / (1000 * 60 * 60 * 24));
-  if (dias < 0) return { dataInativo: null, dias: null };
-  return { dataInativo: ultimoPagamento.toISOString(), dias };
+function calcularInativoDesde(mesReferente: string | null | undefined, diaVencimento: string | null | undefined, dataContrato: string | null | undefined): { dataInativo: string | null; dias: number | null } {
+  if (mesReferente) {
+    const partes = mesReferente.split('/');
+    if (partes.length === 2) {
+      const [mes, ano] = partes;
+      const dia = Math.min(parseInt(diaVencimento ?? '1', 10) || 1, 28);
+      const data = new Date(parseInt(ano), parseInt(mes) - 1, dia);
+      if (!isNaN(data.getTime())) {
+        const dias = Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
+        if (dias >= 0) return { dataInativo: data.toISOString(), dias };
+      }
+    }
+  }
+  if (dataContrato) {
+    const data = new Date(dataContrato);
+    if (!isNaN(data.getTime())) {
+      const dias = Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
+      return { dataInativo: data.toISOString(), dias };
+    }
+  }
+  return { dataInativo: null, dias: null };
 }
 
 export async function GET() {
@@ -51,7 +61,7 @@ export async function GET() {
 
           if (!statusRDV.existe) return null;
 
-          const { dataInativo, dias } = calcularInativoDesde(v.mes_referente, v.dia_vencimento);
+          const { dataInativo, dias } = calcularInativoDesde(v.mes_referente, v.dia_vencimento, v.data_contrato);
           const resultado: VeiculoInativoRDV = {
             placa: v.placa || '',
             chassi: v.chassi || '',
