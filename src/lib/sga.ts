@@ -268,14 +268,13 @@ export async function buscarFimCobertura(
   return null;
 }
 
-// Início da inatividade pela regra do negócio: o veículo fica inativo quando o boleto
-// SEGUINTE ao último vencimento pago deixa de ser pago — ou seja, vencimento + 30 dias.
-// Se esse marco ainda está no futuro (pagou há menos de 30 dias), acabou de ficar
-// inativo: conta a partir de hoje (0 dias), sem cair nos fallbacks.
+// Início da inatividade pela regra do negócio (revisão do Lucas em 09/07/2026):
+// conta a partir do PRÓPRIO último vencimento pago — o primeiro momento sem
+// pagamento. Se o vencimento está no futuro (parcela paga adiantada), o veículo
+// acabou de ficar inativo: conta a partir de hoje (0 dias), sem cair nos fallbacks.
 export function inicioInatividadePorBoleto(fimCobertura: Date | null): Date | null {
   if (!fimCobertura) return null;
-  const inicio = new Date(fimCobertura.getTime() + 30 * 24 * 60 * 60 * 1000);
-  return inicio > new Date() ? new Date() : inicio;
+  return fimCobertura > new Date() ? new Date() : fimCobertura;
 }
 
 // Data de alteração do registro no SGA, descartando o mutirão de migração que
