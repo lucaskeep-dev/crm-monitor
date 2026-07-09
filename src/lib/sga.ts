@@ -195,11 +195,20 @@ export function parseDataSGA(s?: string | null): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
+// Taxas de serviço avulsas não representam cobertura (ex.: "DESINSTALAÇÃO DE
+// EQUIPAMENTO" R$50 paga meses após o cancelamento zerava o tempo inativo).
+const TIPOS_TAXA_SERVICO = ['INSTALA', 'TAXA'];
+
+function ehTaxaServico(b: SGABoleto): boolean {
+  const tipo = (b.tipo_boleto || '').toUpperCase();
+  return TIPOS_TAXA_SERVICO.some(t => tipo.includes(t));
+}
+
 // Data em que o veículo deixou de ter cobertura paga: VENCIMENTO do último boleto
-// BAIXADO. Usa vencimento (não data de pagamento) pra que quitação atrasada de
-// boleto antigo não puxe a data pra frente. Não filtra por tipo_boleto: neste SGA
-// as mensalidades normais são emitidas como carnês tipo "FECHAMENTO", então o tipo
-// não discrimina mensalidade de acerto (verificado nos dados em 09/07/2026).
+// BAIXADO que não seja taxa de serviço. Usa vencimento (não data de pagamento) pra
+// que quitação atrasada de boleto antigo não puxe a data pra frente. Não filtra
+// "FECHAMENTO": neste SGA as mensalidades normais são emitidas como carnês desse
+// tipo, então ele não discrimina mensalidade de acerto (verificado em 09/07/2026).
 export async function buscarFimCobertura(
   placa: string | null | undefined,
   chassi?: string | null,
@@ -244,7 +253,7 @@ export async function buscarFimCobertura(
       }
 
       const vencimentos = boletos
-        .filter(b => b.data_pagamento && !b.data_pagamento.startsWith('0000-00-00') && b.situacao_boleto === 'BAIXADO')
+        .filter(b => b.data_pagamento && !b.data_pagamento.startsWith('0000-00-00') && b.situacao_boleto === 'BAIXADO' && !ehTaxaServico(b))
         .map(b => parseDataSGA(b.data_vencimento) ?? parseDataSGA(b.data_pagamento))
         .filter((d): d is Date => d !== null);
 
