@@ -9,12 +9,16 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Robô de atualização da base RDV (cron) autentica por token dedicado
-  if (pathname === '/api/rdv/importar') {
-    const cronToken = req.headers.get('x-cron-token');
-    if (cronToken && process.env.CRON_SECRET && cronToken === process.env.CRON_SECRET) {
+  // Robô (cron) e auto-refresh interno autenticam por token dedicado
+  const cronToken = req.headers.get('x-cron-token');
+  if (cronToken && process.env.CRON_SECRET && cronToken === process.env.CRON_SECRET) {
+    const contentType = req.headers.get('content-type') || '';
+    if (contentType.includes('multipart/form-data')) {
       return NextResponse.next();
     }
+    const headers = new Headers(req.headers);
+    headers.set('x-usuario', 'robô');
+    return NextResponse.next({ request: { headers } });
   }
 
   const token = req.cookies.get(COOKIE_NAME)?.value;

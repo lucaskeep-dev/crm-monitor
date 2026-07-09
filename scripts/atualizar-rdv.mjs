@@ -97,6 +97,21 @@ async function importarArquivo(arquivo) {
   log(`importação ok: ${corpo.total} veículos (importado_em ${corpo.importado_em})`);
 }
 
+// Atualiza a base de veículos ativos do SGA no mesmo momento da base RDV
+async function atualizarSGA() {
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  log('atualizando base SGA...');
+  const res = await fetch(`${appUrl}/api/sga/atualizar`, {
+    method: 'POST',
+    headers: { 'x-cron-token': process.env.CRON_SECRET },
+  });
+  const corpo = await res.json().catch(() => ({}));
+  if (!res.ok || !corpo.ok) {
+    throw new Error(`atualização SGA falhou (HTTP ${res.status}): ${corpo.erro || JSON.stringify(corpo).slice(0, 200)}`);
+  }
+  log(`base SGA ok: ${corpo.total} veículos ativos (gerado_em ${corpo.gerado_em})`);
+}
+
 async function main() {
   carregarEnv();
   for (const chave of ['RDV_PORTAL_USER', 'RDV_PORTAL_SENHA', 'CRON_SECRET']) {
@@ -110,21 +125,41 @@ async function main() {
   fs.rmSync(DIR_DOWNLOADS, { recursive: true, force: true });
   fs.mkdirSync(DIR_DOWNLOADS, { recursive: true });
 
+  let rdvOk = false;
   let ultimoErro;
-  for (let tentativa = 1; tentativa <= TENTATIVAS; tentativa++) {
+  for (let tentativa = 1; tentativa <= TENTATIVAS && !rdvOk; tentativa++) {
     try {
       const arquivo = await baixarRelatorio();
       await importarArquivo(arquivo);
-      log('atualização da base RDV concluída.');
-      return;
+      rdvOk = true;
     } catch (e) {
       ultimoErro = e;
       log(`tentativa ${tentativa}/${TENTATIVAS} falhou: ${e.message}`);
       if (tentativa < TENTATIVAS) await new Promise(r => setTimeout(r, 30_000));
     }
   }
-  console.error(`[${new Date().toISOString()}] ERRO: todas as tentativas falharam — ${ultimoErro?.message}`);
-  process.exit(1);
+  if (!rdvOk) {
+    console.error(`[${new Date().toISOString()}] ERRO: todas as tentativas falharam — ${ultimoErro?.message}`);
+    process.exit(1);
+  }
+
+  let sgaOk = false;
+  for (let tentativa = 1; tentativa <= TENTATIVAS && !sgaOk; tentativa++) {
+    try {
+      await atualizarSGA();
+      sgaOk = true;
+    } catch (e) {
+      ultimoErro = e;
+      log(`SGA tentativa ${tentativa}/${TENTATIVAS} falhou: ${e.message}`);
+      if (tentativa < TENTATIVAS) await new Promise(r => setTimeout(r, 30_000));
+    }
+  }
+  if (!sgaOk) {
+    console.error(`[${new Date().toISOString()}] ERRO: base RDV atualizada, mas SGA falhou — ${ultimoErro?.message}`);
+    process.exit(1);
+  }
+
+  log('atualização das bases RDV + SGA concluída.');
 }
 
 main();

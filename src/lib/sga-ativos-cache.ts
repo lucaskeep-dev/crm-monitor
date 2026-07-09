@@ -100,3 +100,11 @@ export async function obterVeiculosAtivos(
   }
   return fetchingPromise;
 }
+
+// Força a atualização do cache ignorando o TTL (usado pelo robô junto com a base RDV)
+export async function atualizarCacheAtivos(): Promise<CacheSGAAtivos> {
+  if (!fetchingPromise) {
+    fetchingPromise = fetchAtivos().finally(() => { fetchingPromise = null; });
+  }
+  return fetchingPromise;
+}

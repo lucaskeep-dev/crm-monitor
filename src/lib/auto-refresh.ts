@@ -8,8 +8,13 @@ const ENTRE_CICLOS_MS = 60_000;        // 1 min entre ciclos completos
 const ESPERA_BLACKLIST_MS = 10 * 60_000; // 10 min após detectar blacklist
 const STARTUP_DELAY_MS = 10_000;
 
-const PORT = process.env.PORT || '3002';
+const PORT = process.env.PORT || '3000';
 const BASE_URL = process.env.REFRESH_BASE_URL || `http://localhost:${PORT}`;
+
+// As rotas internas passam pelo middleware de login; o token de cron autentica o loop
+function headersInternos(): Record<string, string> {
+  return process.env.CRON_SECRET ? { 'x-cron-token': process.env.CRON_SECRET } : {};
+}
 
 // Lock anti-concorrência por relatório
 const running = { inativos: false, ausentes: false, semPontuar: false };
@@ -25,7 +30,8 @@ function lerStatus(arquivo: string): CacheStatus {
 }
 
 async function consumirStream(url: string): Promise<void> {
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: headersInternos() });
+  if (!res.ok) throw new Error(`HTTP ${res.status} em ${url}`);
   if (!res.body) return;
   const reader = res.body.getReader();
   while (true) {
@@ -35,7 +41,8 @@ async function consumirStream(url: string): Promise<void> {
 }
 
 async function chamarAtualizar(url: string): Promise<void> {
-  await fetch(url);
+  const res = await fetch(url, { headers: headersInternos() });
+  if (!res.ok) throw new Error(`HTTP ${res.status} em ${url}`);
 }
 
 // Decide se roda scan completo (stream) ou apenas verifica veículos já no cache (atualizar)

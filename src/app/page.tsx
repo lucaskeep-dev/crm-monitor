@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   AlertTriangle, CarFront, ChevronDown, ChevronUp, Clock, Search,
   CheckCircle2, XCircle, Loader2, Database, WifiOff, Zap, Activity, Terminal,
-  Send, X, Mail, MessageCircle, ExternalLink, Upload, Download, RefreshCw,
+  Send, X, Mail, MessageCircle, ExternalLink, Download, RefreshCw,
 } from 'lucide-react';
 import {
   RelatorioInativos, RelatorioAusentes, RelatorioSemPontuar,
@@ -1421,7 +1421,6 @@ export default function Dashboard() {
   const [abaAtiva, setAbaAtiva] = useState<Aba>('inativos');
   const [diasSemPontuar, setDiasSemPontuar] = useState(7);
   const [rdvLocal, setRdvLocal] = useState<{ total: number; importado_em: string; origem?: string } | null>(null);
-  const [importando, setImportando] = useState(false);
   const [atualizandoRdv, setAtualizandoRdv] = useState(false);
   const [ignoradosAusentes, setIgnoradosAusentes] = useState<Set<string>>(new Set());
   const [rescanTrigger, setRescanTrigger] = useState(0);
@@ -1488,21 +1487,6 @@ export default function Dashboard() {
     const d = await res.json() as { ignorados?: { placa: string }[] };
     setIgnoradosAusentes(new Set((d.ignorados ?? []).map(i => i.placa.toUpperCase())));
   };
-
-  async function importarRelatorioRDV(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImportando(true);
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/rdv/importar', { method: 'POST', body: fd });
-      const d = await res.json();
-      if (d.ok) setRdvLocal({ total: d.total, importado_em: d.importado_em, origem: d.origem });
-      else alert('Erro ao importar: ' + d.erro);
-    } catch { alert('Erro ao importar arquivo'); }
-    finally { setImportando(false); e.target.value = ''; }
-  }
 
   const inativos = useStreamRelatorio('/api/relatorio/inativos/stream');
   const ausentes = useStreamRelatorio('/api/relatorio/ausentes/stream');
@@ -1588,7 +1572,7 @@ export default function Dashboard() {
               >
                 <Clock size={13} className={atrasada ? 'text-amber-400' : 'text-gray-400'} />
                 <span className={`text-[11px] font-mono ${atrasada ? 'text-amber-300' : 'text-gray-400'}`}>
-                  base atualizada {dt.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · {auto ? 'auto' : 'manual'}
+                  base RDV · {rdvLocal.total.toLocaleString('pt-BR')} veíc. · {dt.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · {auto ? 'auto' : 'manual'}
                 </span>
               </div>
             );
@@ -1596,7 +1580,7 @@ export default function Dashboard() {
           {/* Atualizar base RDV agora (dispara o robô) */}
           <button
             onClick={atualizarBaseRdv}
-            disabled={atualizandoRdv || importando}
+            disabled={atualizandoRdv}
             title="Baixa o Relatório de Ativos do portal Rede Veículos e atualiza a base agora"
             className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ${atualizandoRdv ? 'opacity-70 cursor-wait border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 cursor-pointer'}`}
           >
@@ -1605,21 +1589,13 @@ export default function Dashboard() {
               {atualizandoRdv ? 'atualizando base...' : 'Atualizar base RDV'}
             </span>
           </button>
-          {/* Importar relatório RDV */}
-          <label className={`flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer transition-all ${importando ? 'opacity-50 cursor-not-allowed border-gray-600 bg-gray-700/20' : 'border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20'}`}>
-            <Upload size={13} className="text-blue-400" />
-            <span className="text-[11px] font-mono text-blue-300">
-              {importando ? 'importando...' : rdvLocal ? `RDV local · ${rdvLocal.total.toLocaleString('pt-BR')} veíc.` : 'Importar RDV'}
-            </span>
-            <input type="file" accept=".xlsx,.xls" className="hidden" disabled={importando} onChange={importarRelatorioRDV} />
-          </label>
           {/* Status de auto-refresh */}
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur">
             <span className="relative flex w-2 h-2">
               <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-75 animate-ping" />
               <span className="relative inline-flex rounded-full w-2 h-2 bg-emerald-400" />
             </span>
-            <span className="text-[11px] font-mono text-emerald-300">auto-refresh · 6h</span>
+            <span className="text-[11px] font-mono text-emerald-300" title="Bases RDV e SGA baixadas às 08h, 12h, 16h e 18h; relatórios recalculados continuamente">bases · 08/12/16/18h</span>
           </div>
         </div>
       </div>
