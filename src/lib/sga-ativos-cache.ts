@@ -101,6 +101,16 @@ export async function obterVeiculosAtivos(
   return fetchingPromise;
 }
 
+// Última geração do cache, ignorando TTL (pra exibir "atualizada há X" na UI)
+export function statsCacheAtivos(): { gerado_em: string; total: number } | null {
+  try {
+    if (!fs.existsSync(ARQUIVO)) return null;
+    const dados = JSON.parse(fs.readFileSync(ARQUIVO, 'utf-8')) as CacheSGAAtivos;
+    if (!dados.gerado_em) return null;
+    return { gerado_em: dados.gerado_em, total: dados.total };
+  } catch { return null; }
+}
+
 // Força a atualização do cache ignorando o TTL (usado pelo robô junto com a base RDV)
 export async function atualizarCacheAtivos(): Promise<CacheSGAAtivos> {
   if (!fetchingPromise) {

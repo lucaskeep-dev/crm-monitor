@@ -1422,6 +1422,8 @@ export default function Dashboard() {
   const [diasSemPontuar, setDiasSemPontuar] = useState(7);
   const [rdvLocal, setRdvLocal] = useState<{ total: number; importado_em: string; origem?: string } | null>(null);
   const [atualizandoRdv, setAtualizandoRdv] = useState(false);
+  const [sgaBase, setSgaBase] = useState<{ gerado_em: string } | null>(null);
+  const [atualizandoSga, setAtualizandoSga] = useState(false);
   const [ignoradosAusentes, setIgnoradosAusentes] = useState<Set<string>>(new Set());
   const [rescanTrigger, setRescanTrigger] = useState(0);
 
@@ -1429,6 +1431,17 @@ export default function Dashboard() {
     fetch('/api/rdv/local-stats').then(r => r.json()).then(d => { if (d.ok) setRdvLocal(d); }).catch(() => {});
     // Se o robô já estiver rodando (disparado por outra aba ou pelo cron via botão), reflete no botão
     fetch('/api/rdv/atualizar').then(r => r.json()).then(d => { if (d.ok && d.rodando) setAtualizandoRdv(true); }).catch(() => {});
+    fetch('/api/sga/atualizar').then(r => r.json()).then(d => {
+      if (d.ok && d.gerado_em) setSgaBase({ gerado_em: d.gerado_em });
+      if (d.ok && d.rodando) setAtualizandoSga(true);
+    }).catch(() => {});
+  }, []);
+
+  // Re-renderiza a cada minuto pra manter o "atualizada há X min" dos botões vivo
+  const [, setTickMinuto] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTickMinuto(t => t + 1), 60_000);
+    return () => clearInterval(id);
   }, []);
 
   async function atualizarBaseRdv() {
@@ -1460,6 +1473,56 @@ export default function Dashboard() {
       alert('Erro ao iniciar atualização da base RDV');
     }
     setAtualizandoRdv(false);
+  }
+
+  async function atualizarBaseSga() {
+    if (atualizandoSga) return;
+    setAtualizandoSga(true);
+    const anterior = sgaBase?.gerado_em ?? null;
+    try {
+      const res = await fetch('/api/sga/atualizar', { method: 'POST' });
+      const d = await res.json().catch(() => null);
+      if (d?.ok && d.gerado_em) {
+        setSgaBase({ gerado_em: d.gerado_em });
+        setAtualizandoSga(false);
+        return;
+      }
+      if (d && !d.ok && res.status !== 409) {
+        alert('Erro ao atualizar base SGA: ' + (d.erro ?? res.status));
+        setAtualizandoSga(false);
+        return;
+      }
+      // 409 (já rodando) ou resposta perdida no proxy: acompanha pelo gerado_em
+    } catch { /* demora >60s pode estourar o proxy — acompanha pelo gerado_em */ }
+    for (let i = 0; i < 60; i++) {
+      await new Promise(r => setTimeout(r, 5_000));
+      const s = await fetch('/api/sga/atualizar').then(r => r.json()).catch(() => null);
+      if (s?.ok && !s.rodando && s.gerado_em && s.gerado_em !== anterior) {
+        setSgaBase({ gerado_em: s.gerado_em });
+        setAtualizandoSga(false);
+        return;
+      }
+    }
+    alert('A atualização SGA não concluiu em 5 minutos — veja a tela de Logs ou tente novamente.');
+    setAtualizandoSga(false);
+  }
+
+  // "há 40 min", "há 3h", "há 2 dias"
+  function tempoRelativo(iso: string): string {
+    const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
+    if (min < 1) return 'agora';
+    if (min < 60) return `há ${min} min`;
+    const h = Math.floor(min / 60);
+    if (h < 48) return `há ${h}h`;
+    return `há ${Math.floor(h / 24)} dias`;
+  }
+
+  // Próximo horário do robô (08/12/16/18 no fuso de Brasília)
+  function proximaAtualizacaoAuto(): string {
+    const HORAS = [8, 12, 16, 18];
+    const agoraBRT = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+    const prox = HORAS.find(x => x > agoraBRT.getHours());
+    return prox ? `hoje ${String(prox).padStart(2, '0')}h` : 'amanhã 08h';
   }
 
   useEffect(() => {
@@ -1560,43 +1623,50 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Última atualização da base RDV */}
-          {rdvLocal?.importado_em && (() => {
-            const dt = new Date(rdvLocal.importado_em);
-            const atrasada = Date.now() - dt.getTime() > 15 * 3_600_000; // sem atualização há mais de 15h = perdeu ciclo do robô
-            const auto = rdvLocal.origem === 'automatico';
+          {/* Atualizar base RDV agora (dispara o robô) */}
+          {(() => {
+            const atrasada = rdvLocal?.importado_em ? Date.now() - new Date(rdvLocal.importado_em).getTime() > 15 * 3_600_000 : false;
             return (
-              <div
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur ${atrasada ? 'border-amber-500/30 bg-amber-500/10' : 'border-gray-600/40 bg-gray-700/20'}`}
-                title={`Base RDV atualizada em ${dt.toLocaleString('pt-BR')} — importação ${auto ? 'automática' : 'manual'}${atrasada ? ' (atrasada: robô não roda há mais de 15h)' : ''}`}
+              <button
+                onClick={atualizarBaseRdv}
+                disabled={atualizandoRdv}
+                title={`Baixa o Relatório de Ativos do portal Rede Veículos e atualiza a base agora${rdvLocal?.importado_em ? ` — última: ${new Date(rdvLocal.importado_em).toLocaleString('pt-BR')}` : ''}`}
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border transition-all text-left ${atualizandoRdv ? 'opacity-70 cursor-wait border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 cursor-pointer'}`}
               >
-                <Clock size={13} className={atrasada ? 'text-amber-400' : 'text-gray-400'} />
-                <span className={`text-[11px] font-mono ${atrasada ? 'text-amber-300' : 'text-gray-400'}`}>
-                  base RDV · {rdvLocal.total.toLocaleString('pt-BR')} veíc. · {dt.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · {auto ? 'auto' : 'manual'}
+                <RefreshCw size={14} className={`shrink-0 text-emerald-400 ${atualizandoRdv ? 'animate-spin' : ''}`} />
+                <span className="flex flex-col leading-snug">
+                  <span className="text-[11px] font-mono text-emerald-300">
+                    {atualizandoRdv ? 'atualizando base RDV...' : 'Atualizar base RDV'}
+                  </span>
+                  <span className={`text-[10px] font-mono ${atrasada ? 'text-amber-300' : 'text-gray-400'}`}>
+                    {rdvLocal?.importado_em ? `atualizada ${tempoRelativo(rdvLocal.importado_em)}` : 'sem atualização'} · próx. {proximaAtualizacaoAuto()}
+                  </span>
                 </span>
-              </div>
+              </button>
             );
           })()}
-          {/* Atualizar base RDV agora (dispara o robô) */}
-          <button
-            onClick={atualizarBaseRdv}
-            disabled={atualizandoRdv}
-            title="Baixa o Relatório de Ativos do portal Rede Veículos e atualiza a base agora"
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ${atualizandoRdv ? 'opacity-70 cursor-wait border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 cursor-pointer'}`}
-          >
-            <RefreshCw size={13} className={`text-emerald-400 ${atualizandoRdv ? 'animate-spin' : ''}`} />
-            <span className="text-[11px] font-mono text-emerald-300">
-              {atualizandoRdv ? 'atualizando base...' : 'Atualizar base RDV'}
-            </span>
-          </button>
-          {/* Status de auto-refresh */}
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur">
-            <span className="relative flex w-2 h-2">
-              <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full w-2 h-2 bg-emerald-400" />
-            </span>
-            <span className="text-[11px] font-mono text-emerald-300" title="Bases RDV e SGA baixadas às 08h, 12h, 16h e 18h; relatórios recalculados continuamente">bases · 08/12/16/18h</span>
-          </div>
+          {/* Atualizar base SGA agora */}
+          {(() => {
+            const atrasada = sgaBase?.gerado_em ? Date.now() - new Date(sgaBase.gerado_em).getTime() > 15 * 3_600_000 : false;
+            return (
+              <button
+                onClick={atualizarBaseSga}
+                disabled={atualizandoSga}
+                title={`Rebaixa a lista de veículos ativos do SGA agora${sgaBase?.gerado_em ? ` — última: ${new Date(sgaBase.gerado_em).toLocaleString('pt-BR')}` : ''}`}
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl border transition-all text-left ${atualizandoSga ? 'opacity-70 cursor-wait border-blue-500/30 bg-blue-500/10' : 'border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 cursor-pointer'}`}
+              >
+                <RefreshCw size={14} className={`shrink-0 text-blue-400 ${atualizandoSga ? 'animate-spin' : ''}`} />
+                <span className="flex flex-col leading-snug">
+                  <span className="text-[11px] font-mono text-blue-300">
+                    {atualizandoSga ? 'atualizando base SGA...' : 'Atualizar base SGA'}
+                  </span>
+                  <span className={`text-[10px] font-mono ${atrasada ? 'text-amber-300' : 'text-gray-400'}`}>
+                    {sgaBase?.gerado_em ? `atualizada ${tempoRelativo(sgaBase.gerado_em)}` : 'sem atualização'} · próx. {proximaAtualizacaoAuto()}
+                  </span>
+                </span>
+              </button>
+            );
+          })()}
         </div>
       </div>
 

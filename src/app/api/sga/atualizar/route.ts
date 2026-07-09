@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { atualizarCacheAtivos } from '@/lib/sga-ativos-cache';
+import { atualizarCacheAtivos, statsCacheAtivos } from '@/lib/sga-ativos-cache';
 import { registrarLog } from '@/lib/logs';
 import { extrairUsuario, COOKIE_NAME } from '@/lib/auth';
 
@@ -9,6 +9,16 @@ export const maxDuration = 300;
 const lockKey = '__sga_atualizar_rodando';
 function estaRodando(): boolean { return Boolean((globalThis as Record<string, unknown>)[lockKey]); }
 function setRodando(v: boolean) { (globalThis as Record<string, unknown>)[lockKey] = v; }
+
+export async function GET() {
+  const stats = statsCacheAtivos();
+  return NextResponse.json({
+    ok: true,
+    rodando: estaRodando(),
+    gerado_em: stats?.gerado_em ?? null,
+    total: stats?.total ?? null,
+  });
+}
 
 export async function POST(req: NextRequest) {
   if (estaRodando()) {
