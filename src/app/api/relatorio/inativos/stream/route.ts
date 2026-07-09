@@ -6,6 +6,7 @@ import { obterStatusVeiculoComCache, flushCacheRDV, statsCacheRDV } from '@/lib/
 import { lerSituacoesConfig, salvarCacheInativos, lerCacheInativos } from '@/lib/storage';
 import { VeiculoInativoRDV } from '@/types';
 import { registrarLog } from '@/lib/logs';
+import { createSSEHandle } from '@/lib/sse';
 
 function diasDesde(data: Date, dataContrato: string | null | undefined): { dataInativo: string | null; dias: number | null } {
   const dias = Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
@@ -42,9 +43,8 @@ export async function GET(req: Request) {
 
   const stream = new ReadableStream({
     async start(controller) {
-      function send(data: object) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-      }
+      const sse = createSSEHandle(controller, req.signal);
+      const send = sse.send;
 
       try {
         const stats = statsCacheRDV();
@@ -56,7 +56,7 @@ export async function GET(req: Request) {
 
         if (config.codigos_inativos.length === 0) {
           send({ tipo: 'erro', msg: 'Nenhuma situação marcada como inativa. Acesse Configurações para configurar.' });
-          controller.close();
+          sse.close();
           return;
         }
 
@@ -97,7 +97,7 @@ export async function GET(req: Request) {
 
         if (todosVeiculos.length === 0) {
           send({ tipo: 'concluido', total: 0, veiculos: [], gerado_em: new Date().toISOString() });
-          controller.close();
+          sse.close();
           return;
         }
 
@@ -150,6 +150,10 @@ export async function GET(req: Request) {
         send({ tipo: 'rdv_inicio', total: todosVeiculos.length });
 
         for (let i = 0; i < todosVeiculos.length; i += BATCH) {
+          if (sse.isCanceled()) {
+            persistirParcial('em_progresso');
+            return;
+          }
           const batch = todosVeiculos.slice(i, i + BATCH);
 
           const checagens = await Promise.allSettled(
@@ -160,9 +164,11 @@ export async function GET(req: Request) {
               const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined);
               if (!statusRDV.existe) return { chave: k, resultado: null };
 
-              const identificador = v.placa || v.chassi;
-              const ultimoPagamento = identificador ? await buscarUltimoPagamento(identificador) : null;
-              // Fallback: data_contrato_final (fim do contrato) > data_contrato (início do contrato)
+              const ultimoPagamento = await buscarUltimoPagamento(
+                v.placa || null,
+                v.chassi || null,
+                v.codigo_associado ? Number(v.codigo_associado) : null,
+              );
               const dataFallback = v.data_contrato_final
                 ? new Date(v.data_contrato_final)
                 : v.data_contrato ? new Date(v.data_contrato) : null;
@@ -231,7 +237,7 @@ export async function GET(req: Request) {
       } finally {
         try { flushCacheRDV(); } catch { /* noop */ }
         setRunning(false);
-        controller.close();
+        sse.close();
       }
     },
   });

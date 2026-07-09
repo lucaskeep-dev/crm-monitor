@@ -180,7 +180,20 @@ function formatarData(d: Date): string {
   return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
-export async function buscarUltimoPagamento(placaOuChassi: string): Promise<Date | null> {
+interface SGABoleto {
+  data_pagamento?: string;
+  situacao_boleto?: string;
+  veiculos?: Array<{ chassi?: string }>;
+}
+
+export async function buscarUltimoPagamento(
+  placa: string | null | undefined,
+  chassi?: string | null,
+  codigoAssociado?: number | null,
+): Promise<Date | null> {
+  const temPlaca = Boolean(placa);
+  if (!temPlaca && !codigoAssociado) return null;
+
   const JANELA = 200;
   const MAX_JANELAS = 6; // até 1200 dias (~3 anos) para trás
   const hoje = new Date();
@@ -192,27 +205,37 @@ export async function buscarUltimoPagamento(placaOuChassi: string): Promise<Date
     inicio.setDate(inicio.getDate() - JANELA);
 
     try {
-      const data = await sgaRequest<unknown[]>('listar/boleto-associado-veiculo', {
+      const corpo: Record<string, unknown> = {
+        data_pagamento_inicial: formatarData(inicio),
+        data_pagamento_final: formatarData(fim),
+      };
+      if (temPlaca) {
+        corpo.placa = placa;
+      } else {
+        corpo.codigo_associado = codigoAssociado;
+      }
+
+      const data = await sgaRequest<SGABoleto[]>('listar/boleto-associado-veiculo', {
         method: 'POST',
-        body: JSON.stringify({
-          placa: placaOuChassi, // SGA aceita placa ou chassi neste campo
-          data_pagamento_inicial: formatarData(inicio),
-          data_pagamento_final: formatarData(fim),
-        }),
+        body: JSON.stringify(corpo),
       });
 
       if (!Array.isArray(data) || data.length === 0) continue;
 
-      const pagos = data
-        .filter((b: unknown) => {
-          const boleto = b as { data_pagamento?: string; situacao_boleto?: string };
-          return boleto.data_pagamento && boleto.data_pagamento !== '0000-00-00' && boleto.situacao_boleto === 'BAIXADO';
-        })
-        .map((b: unknown) => new Date((b as { data_pagamento: string }).data_pagamento))
-        .filter((d: Date) => !isNaN(d.getTime()));
+      // Ao buscar por codigo_associado, manter apenas boletos deste chassi (associado pode ter outros veículos)
+      let boletos = data;
+      if (!temPlaca && chassi) {
+        const chassiUp = chassi.toUpperCase();
+        boletos = data.filter(b => b.veiculos?.some(v => v.chassi?.toUpperCase() === chassiUp));
+      }
+
+      const pagos = boletos
+        .filter(b => b.data_pagamento && b.data_pagamento !== '0000-00-00' && b.situacao_boleto === 'BAIXADO')
+        .map(b => new Date(b.data_pagamento!))
+        .filter(d => !isNaN(d.getTime()));
 
       if (pagos.length > 0) {
-        return pagos.reduce((a: Date, b: Date) => (b > a ? b : a));
+        return pagos.reduce((a, b) => (b > a ? b : a));
       }
     } catch {
       continue;

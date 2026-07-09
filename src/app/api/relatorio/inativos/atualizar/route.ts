@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { RdvAbortError } from '@/lib/rdv';
 import { obterStatusVeiculoComCache, flushCacheRDV } from '@/lib/cache-rdv';
 import { lerCacheInativos, salvarCacheInativos } from '@/lib/storage';
-import { buscarUltimoPagamento } from '@/lib/sga';
 import { VeiculoInativoRDV } from '@/types';
 
 export const maxDuration = 300;
@@ -46,25 +45,14 @@ export async function GET() {
           const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined);
           if (!statusRDV.existe) return { chave: k, resultado: null };
 
-          // Recalcula dias_inativo: usa placa ou chassi para buscar último pagamento
-          const identificador = v.placa || v.chassi;
-          const ultimoPagamento = identificador ? await buscarUltimoPagamento(identificador) : null;
-
-          let dataBase: Date | null = ultimoPagamento;
-          if (!dataBase && v.data_contrato) {
-            // Tenta data_contrato como ISO — pode ser data_contrato_final se foi reescrito
-            const d = new Date(v.data_contrato);
-            if (!isNaN(d.getTime())) dataBase = d;
-          }
-
-          const dias = dataBase ? diasDesde(dataBase) : v.dias_inativo;
-          const dataInativo = dataBase ? dataBase.toISOString() : v.data_contrato;
+          // Recalcula dias a partir da data já corrigida no cache (data_contrato = data de inativação)
+          const dataBase = v.data_contrato ? new Date(v.data_contrato) : null;
+          const dias = dataBase && !isNaN(dataBase.getTime()) ? diasDesde(dataBase) : v.dias_inativo;
 
           return {
             chave: k,
             resultado: {
               ...v,
-              data_contrato: dataInativo,
               dias_inativo: dias,
               status_rdv: statusRDV.ativo ? 'Ativo na RDV' : 'Inativo na RDV',
             } as VeiculoInativoRDV,

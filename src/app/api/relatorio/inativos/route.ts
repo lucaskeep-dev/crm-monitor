@@ -48,7 +48,11 @@ export async function GET() {
 
           if (!statusRDV.existe) return null;
 
-          const ultimoPagamento = v.placa ? await buscarUltimoPagamento(v.placa) : null;
+          const ultimoPagamento = await buscarUltimoPagamento(
+            v.placa || null,
+            v.chassi || null,
+            v.codigo_associado ? Number(v.codigo_associado) : null,
+          );
           const dataBase = ultimoPagamento ?? (v.data_contrato ? new Date(v.data_contrato) : null);
           const { dataInativo, dias } = dataBase ? diasDesde(dataBase, v.data_contrato) : { dataInativo: null, dias: null };
           const resultado: VeiculoInativoRDV = {

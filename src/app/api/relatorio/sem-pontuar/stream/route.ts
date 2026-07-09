@@ -4,6 +4,7 @@ import { obterUltimaPosicaoComCache, flushCacheRDV, statsCacheRDV } from '@/lib/
 import { salvarCacheSemPontuar, lerCacheSemPontuar } from '@/lib/storage';
 import { obterVeiculosAtivos } from '@/lib/sga-ativos-cache';
 import { VeiculoSemPontuar } from '@/types';
+import { createSSEHandle } from '@/lib/sse';
 
 export const maxDuration = 300;
 
@@ -33,11 +34,8 @@ export async function GET(request: NextRequest) {
 
   const stream = new ReadableStream({
     async start(controller) {
-      function send(data: object) {
-        try {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-        } catch { /* cliente desconectou */ }
-      }
+      const sse = createSSEHandle(controller, request.signal);
+      const send = sse.send;
 
       try {
         const stats = statsCacheRDV();
@@ -206,7 +204,7 @@ export async function GET(request: NextRequest) {
       } finally {
         try { flushCacheRDV(); } catch { /* noop */ }
         setRunning(false);
-        controller.close();
+        sse.close();
       }
     },
   });

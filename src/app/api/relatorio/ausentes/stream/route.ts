@@ -3,6 +3,7 @@ import { obterStatusVeiculoComCache, flushCacheRDV, statsCacheRDV } from '@/lib/
 import { listarRegras, regraSeAplica, salvarCacheAusentes, lerCacheAusentes } from '@/lib/storage';
 import { obterVeiculosAtivos } from '@/lib/sga-ativos-cache';
 import { VeiculoAusenteRDV } from '@/types';
+import { createSSEHandle } from '@/lib/sse';
 
 export const maxDuration = 300;
 
@@ -13,7 +14,7 @@ const lockKey = '__ausentes_stream_running';
 function isRunning(): boolean { return Boolean((globalThis as Record<string, unknown>)[lockKey]); }
 function setRunning(v: boolean) { (globalThis as Record<string, unknown>)[lockKey] = v; }
 
-export async function GET() {
+export async function GET(req: Request) {
   const encoder = new TextEncoder();
 
   if (isRunning()) {
@@ -29,11 +30,8 @@ export async function GET() {
 
   const stream = new ReadableStream({
     async start(controller) {
-      function send(data: object) {
-        try {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-        } catch { /* cliente desconectou */ }
-      }
+      const sse = createSSEHandle(controller, req.signal);
+      const send = sse.send;
 
       try {
         const stats = statsCacheRDV();
@@ -44,7 +42,7 @@ export async function GET() {
 
         if (regrasAtivas.length === 0) {
           send({ tipo: 'erro', msg: 'Nenhuma regra FIPE ativa. Acesse "Regras FIPE" para configurar.' });
-          controller.close();
+          sse.close();
           return;
         }
 
@@ -205,7 +203,7 @@ export async function GET() {
       } finally {
         try { flushCacheRDV(); } catch { /* noop */ }
         setRunning(false);
-        controller.close();
+        sse.close();
       }
     },
   });
