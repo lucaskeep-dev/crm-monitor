@@ -189,25 +189,17 @@ interface SGABoleto {
   veiculos?: Array<{ chassi?: string }>;
 }
 
-// Boletos que não representam mensalidade de cobertura: acerto de saída/renegociação.
-// Um cancelamento parcelado gera FECHAMENTOs pagos meses depois do fim da cobertura.
-const TIPOS_NAO_MENSALIDADE = ['FECHAMENTO', 'ACORDO'];
-
-function ehMensalidade(b: SGABoleto): boolean {
-  const tipo = (b.tipo_boleto || '').toUpperCase();
-  return !TIPOS_NAO_MENSALIDADE.some(t => tipo.includes(t));
-}
-
 export function parseDataSGA(s?: string | null): Date | null {
   if (!s || s.startsWith('0000-00-00')) return null;
   const d = new Date(s.includes(' ') ? s.replace(' ', 'T') : s);
   return isNaN(d.getTime()) ? null : d;
 }
 
-// Data em que o veículo deixou de ter cobertura paga:
-// - vencimento da última MENSALIDADE baixada (pagamento atrasado não puxa a data pra frente);
-// - se só existem boletos de fechamento/acordo, usa a emissão do primeiro fechamento
-//   (momento em que o cancelamento começou).
+// Data em que o veículo deixou de ter cobertura paga: VENCIMENTO do último boleto
+// BAIXADO. Usa vencimento (não data de pagamento) pra que quitação atrasada de
+// boleto antigo não puxe a data pra frente. Não filtra por tipo_boleto: neste SGA
+// as mensalidades normais são emitidas como carnês tipo "FECHAMENTO", então o tipo
+// não discrimina mensalidade de acerto (verificado nos dados em 09/07/2026).
 export async function buscarFimCobertura(
   placa: string | null | undefined,
   chassi?: string | null,
@@ -219,7 +211,6 @@ export async function buscarFimCobertura(
   const JANELA = 200;
   const MAX_JANELAS = 6; // até 1200 dias (~3 anos) para trás
   const hoje = new Date();
-  let inicioFechamento: Date | null = null;
 
   for (let i = 0; i < MAX_JANELAS; i++) {
     const fim = new Date(hoje);
@@ -252,30 +243,20 @@ export async function buscarFimCobertura(
         boletos = data.filter(b => b.veiculos?.some(v => v.chassi?.toUpperCase() === chassiUp));
       }
 
-      const baixados = boletos.filter(b =>
-        b.data_pagamento && !b.data_pagamento.startsWith('0000-00-00') && b.situacao_boleto === 'BAIXADO'
-      );
-
-      const vencimentos = baixados
-        .filter(ehMensalidade)
+      const vencimentos = boletos
+        .filter(b => b.data_pagamento && !b.data_pagamento.startsWith('0000-00-00') && b.situacao_boleto === 'BAIXADO')
         .map(b => parseDataSGA(b.data_vencimento) ?? parseDataSGA(b.data_pagamento))
         .filter((d): d is Date => d !== null);
 
       if (vencimentos.length > 0) {
-        // Janela mais recente com mensalidade paga — o maior vencimento dela é o fim da cobertura
+        // Janela mais recente com boleto pago — o maior vencimento dela é o fim da cobertura
         return vencimentos.reduce((a, b) => (b > a ? b : a));
-      }
-
-      // Só fechamentos/acordos nesta janela: guarda a emissão mais antiga e continua procurando mensalidade
-      for (const b of baixados) {
-        const emissao = parseDataSGA(b.data_emissao) ?? parseDataSGA(b.data_vencimento);
-        if (emissao && (!inicioFechamento || emissao < inicioFechamento)) inicioFechamento = emissao;
       }
     } catch {
       continue;
     }
   }
-  return inicioFechamento;
+  return null;
 }
 
 // Data de alteração do registro no SGA, descartando o mutirão de migração que
