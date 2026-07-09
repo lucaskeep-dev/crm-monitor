@@ -1420,7 +1420,7 @@ function PainelRelatorio({ state, tipo, ignorados, onIgnorar, onDesignorar }: {
 export default function Dashboard() {
   const [abaAtiva, setAbaAtiva] = useState<Aba>('inativos');
   const [diasSemPontuar, setDiasSemPontuar] = useState(7);
-  const [rdvLocal, setRdvLocal] = useState<{ total: number; importado_em: string } | null>(null);
+  const [rdvLocal, setRdvLocal] = useState<{ total: number; importado_em: string; origem?: string } | null>(null);
   const [importando, setImportando] = useState(false);
   const [ignoradosAusentes, setIgnoradosAusentes] = useState<Set<string>>(new Set());
   const [rescanTrigger, setRescanTrigger] = useState(0);
@@ -1464,7 +1464,7 @@ export default function Dashboard() {
       fd.append('file', file);
       const res = await fetch('/api/rdv/importar', { method: 'POST', body: fd });
       const d = await res.json();
-      if (d.ok) setRdvLocal({ total: d.total, importado_em: d.importado_em });
+      if (d.ok) setRdvLocal({ total: d.total, importado_em: d.importado_em, origem: d.origem });
       else alert('Erro ao importar: ' + d.erro);
     } catch { alert('Erro ao importar arquivo'); }
     finally { setImportando(false); e.target.value = ''; }
@@ -1542,6 +1542,23 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
+          {/* Última atualização da base RDV */}
+          {rdvLocal?.importado_em && (() => {
+            const dt = new Date(rdvLocal.importado_em);
+            const atrasada = Date.now() - dt.getTime() > 15 * 3_600_000; // sem atualização há mais de 15h = perdeu ciclo do robô
+            const auto = rdvLocal.origem === 'automatico';
+            return (
+              <div
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur ${atrasada ? 'border-amber-500/30 bg-amber-500/10' : 'border-gray-600/40 bg-gray-700/20'}`}
+                title={`Base RDV atualizada em ${dt.toLocaleString('pt-BR')} — importação ${auto ? 'automática' : 'manual'}${atrasada ? ' (atrasada: robô não roda há mais de 15h)' : ''}`}
+              >
+                <Clock size={13} className={atrasada ? 'text-amber-400' : 'text-gray-400'} />
+                <span className={`text-[11px] font-mono ${atrasada ? 'text-amber-300' : 'text-gray-400'}`}>
+                  base atualizada {dt.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · {auto ? 'auto' : 'manual'}
+                </span>
+              </div>
+            );
+          })()}
           {/* Importar relatório RDV */}
           <label className={`flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer transition-all ${importando ? 'opacity-50 cursor-not-allowed border-gray-600 bg-gray-700/20' : 'border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20'}`}>
             <Upload size={13} className="text-blue-400" />

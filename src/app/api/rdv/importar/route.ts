@@ -77,17 +77,22 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const viaCron = Boolean(process.env.CRON_SECRET) && req.headers.get('x-cron-token') === process.env.CRON_SECRET;
+
     const data: RdvLocalData = {
       veiculos,
       importado_em: new Date().toISOString(),
       total: veiculos.length,
+      origem: viaCron ? 'automatico' : 'manual',
     };
 
     salvarRdvLocal(data);
-    const usuario = req.headers.get('x-usuario') || extrairUsuario(req.cookies.get(COOKIE_NAME)?.value) || 'desconhecido';
-    registrarLog(usuario, 'importar_rdv', `${veiculos.length} veículos — ${file.name}`);
+    const usuario = viaCron
+      ? 'robô'
+      : req.headers.get('x-usuario') || extrairUsuario(req.cookies.get(COOKIE_NAME)?.value) || 'desconhecido';
+    registrarLog(usuario, 'importar_rdv', `${veiculos.length} veículos — ${file.name} (${viaCron ? 'automático' : 'manual'})`);
 
-    return NextResponse.json({ ok: true, total: veiculos.length, importado_em: data.importado_em });
+    return NextResponse.json({ ok: true, total: veiculos.length, importado_em: data.importado_em, origem: data.origem });
   } catch (e) {
     return NextResponse.json({ ok: false, erro: String(e) }, { status: 500 });
   }

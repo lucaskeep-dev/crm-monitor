@@ -9,6 +9,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Robô de atualização da base RDV (cron) autentica por token dedicado
+  if (pathname === '/api/rdv/importar') {
+    const cronToken = req.headers.get('x-cron-token');
+    if (cronToken && process.env.CRON_SECRET && cronToken === process.env.CRON_SECRET) {
+      return NextResponse.next();
+    }
+  }
+
   const token = req.cookies.get(COOKIE_NAME)?.value;
   if (!(await validarToken(token))) {
     const url = req.nextUrl.clone();

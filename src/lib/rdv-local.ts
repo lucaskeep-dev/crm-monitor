@@ -19,6 +19,7 @@ export interface RdvLocalData {
   veiculos: RdvVeiculoLocal[];
   importado_em: string;
   total: number;
+  origem?: 'manual' | 'automatico';
 }
 
 // Cache em memória para não ler o arquivo a cada consulta
@@ -89,8 +90,8 @@ export function rdvLocalDisponivel(): boolean {
   return lerRdvLocal() !== null;
 }
 
-export function statsRdvLocal(): { total: number; importado_em: string } | null {
+export function statsRdvLocal(): { total: number; importado_em: string; origem: 'manual' | 'automatico' } | null {
   const d = lerRdvLocal();
   if (!d) return null;
-  return { total: d.total, importado_em: d.importado_em };
+  return { total: d.total, importado_em: d.importado_em, origem: d.origem ?? 'manual' };
 }
