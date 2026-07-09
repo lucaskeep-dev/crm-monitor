@@ -1,6 +1,6 @@
 export const maxDuration = 300;
 
-import { listarSituacoesVeiculo, listarVeiculosPorSituacao, buscarFimCobertura, dataAlteracaoConfiavel, escolherDataInativacao, parseDataSGA } from '@/lib/sga';
+import { listarSituacoesVeiculo, listarVeiculosPorSituacao, buscarFimCobertura, inicioInatividadePorBoleto, dataAlteracaoConfiavel, escolherDataInativacao, parseDataSGA } from '@/lib/sga';
 import { RdvAbortError } from '@/lib/rdv';
 import { obterStatusVeiculoComCache, flushCacheRDV, statsCacheRDV } from '@/lib/cache-rdv';
 import { lerSituacoesConfig, salvarCacheInativos, lerCacheInativos } from '@/lib/storage';
@@ -156,9 +156,10 @@ export async function GET(req: Request) {
                 v.chassi || null,
                 v.codigo_associado ? Number(v.codigo_associado) : null,
               );
-              // Prioridade: fim da cobertura paga → alteração de situação no SGA → fim/início do contrato
+              // Prioridade: último vencimento pago + 30 dias (boleto seguinte não pago)
+              // → alteração de situação no SGA → fim/início do contrato
               const { dataInativo, dias } = escolherDataInativacao([
-                fimCobertura,
+                inicioInatividadePorBoleto(fimCobertura),
                 dataAlteracaoConfiavel(v),
                 parseDataSGA(v.data_contrato_final),
                 parseDataSGA(v.data_contrato),

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { listarVeiculosPorSituacao, listarSituacoesVeiculo, buscarFimCobertura, dataAlteracaoConfiavel, escolherDataInativacao, parseDataSGA } from '@/lib/sga';
+import { listarVeiculosPorSituacao, listarSituacoesVeiculo, buscarFimCobertura, inicioInatividadePorBoleto, dataAlteracaoConfiavel, escolherDataInativacao, parseDataSGA } from '@/lib/sga';
 import { obterStatusVeiculo } from '@/lib/rdv';
 import { lerSituacoesConfig } from '@/lib/storage';
 import { VeiculoInativoRDV } from '@/types';
@@ -43,9 +43,10 @@ export async function GET() {
             v.chassi || null,
             v.codigo_associado ? Number(v.codigo_associado) : null,
           );
-          // Prioridade: fim da cobertura paga → alteração de situação no SGA → fim/início do contrato
+          // Prioridade: último vencimento pago + 30 dias (boleto seguinte não pago)
+          // → alteração de situação no SGA → fim/início do contrato
           const { dataInativo, dias } = escolherDataInativacao([
-            fimCobertura,
+            inicioInatividadePorBoleto(fimCobertura),
             dataAlteracaoConfiavel(v),
             parseDataSGA(v.data_contrato_final),
             parseDataSGA(v.data_contrato),
