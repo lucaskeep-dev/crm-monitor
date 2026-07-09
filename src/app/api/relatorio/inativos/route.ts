@@ -1,18 +1,8 @@
 import { NextResponse } from 'next/server';
-import { listarVeiculosPorSituacao, listarSituacoesVeiculo, buscarUltimoPagamento } from '@/lib/sga';
+import { listarVeiculosPorSituacao, listarSituacoesVeiculo, buscarFimCobertura, dataAlteracaoConfiavel, escolherDataInativacao, parseDataSGA } from '@/lib/sga';
 import { obterStatusVeiculo } from '@/lib/rdv';
 import { lerSituacoesConfig } from '@/lib/storage';
 import { VeiculoInativoRDV } from '@/types';
-
-function diasDesde(data: Date, dataContrato: string | null | undefined): { dataInativo: string | null; dias: number | null } {
-  const dias = Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
-  if (dias >= 0) return { dataInativo: data.toISOString(), dias };
-  if (dataContrato) {
-    const d = new Date(dataContrato);
-    if (!isNaN(d.getTime())) return { dataInativo: d.toISOString(), dias: Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24)) };
-  }
-  return { dataInativo: null, dias: null };
-}
 
 export async function GET() {
   const gerado_em = new Date().toISOString();
@@ -48,13 +38,18 @@ export async function GET() {
 
           if (!statusRDV.existe) return null;
 
-          const ultimoPagamento = await buscarUltimoPagamento(
+          const fimCobertura = await buscarFimCobertura(
             v.placa || null,
             v.chassi || null,
             v.codigo_associado ? Number(v.codigo_associado) : null,
           );
-          const dataBase = ultimoPagamento ?? (v.data_contrato ? new Date(v.data_contrato) : null);
-          const { dataInativo, dias } = dataBase ? diasDesde(dataBase, v.data_contrato) : { dataInativo: null, dias: null };
+          // Prioridade: fim da cobertura paga → alteração de situação no SGA → fim/início do contrato
+          const { dataInativo, dias } = escolherDataInativacao([
+            fimCobertura,
+            dataAlteracaoConfiavel(v),
+            parseDataSGA(v.data_contrato_final),
+            parseDataSGA(v.data_contrato),
+          ]);
           const resultado: VeiculoInativoRDV = {
             placa: v.placa || '',
             chassi: v.chassi || '',

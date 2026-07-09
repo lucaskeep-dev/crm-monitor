@@ -21,6 +21,8 @@ export interface SGAVeiculo {
   data_contrato?: string;
   data_contrato_final?: string;
   data_cadastro?: string;
+  data_alteracao?: string | null;
+  data_reativacao?: string | null;
   mes_referente?: string;
   dia_vencimento?: string;
   codigo_associado?: string | number;

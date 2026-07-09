@@ -1,25 +1,12 @@
 export const maxDuration = 300;
 
-import { listarSituacoesVeiculo, listarVeiculosPorSituacao, buscarUltimoPagamento } from '@/lib/sga';
+import { listarSituacoesVeiculo, listarVeiculosPorSituacao, buscarFimCobertura, dataAlteracaoConfiavel, escolherDataInativacao, parseDataSGA } from '@/lib/sga';
 import { RdvAbortError } from '@/lib/rdv';
 import { obterStatusVeiculoComCache, flushCacheRDV, statsCacheRDV } from '@/lib/cache-rdv';
 import { lerSituacoesConfig, salvarCacheInativos, lerCacheInativos } from '@/lib/storage';
 import { VeiculoInativoRDV } from '@/types';
 import { registrarLog } from '@/lib/logs';
 import { createSSEHandle } from '@/lib/sse';
-
-function diasDesde(data: Date, dataContrato: string | null | undefined): { dataInativo: string | null; dias: number | null } {
-  const dias = Math.floor((Date.now() - data.getTime()) / (1000 * 60 * 60 * 24));
-  if (dias >= 0) return { dataInativo: data.toISOString(), dias };
-  // fallback: data_contrato
-  if (dataContrato) {
-    const d = new Date(dataContrato);
-    if (!isNaN(d.getTime())) {
-      return { dataInativo: d.toISOString(), dias: Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24)) };
-    }
-  }
-  return { dataInativo: null, dias: null };
-}
 
 // Lock global por endpoint — impede que duas execuções simultâneas dividam o throttle RDV
 const lockKey = '__inativos_stream_running';
@@ -164,16 +151,18 @@ export async function GET(req: Request) {
               const statusRDV = await obterStatusVeiculoComCache(v.placa || undefined, v.chassi || undefined);
               if (!statusRDV.existe) return { chave: k, resultado: null };
 
-              const ultimoPagamento = await buscarUltimoPagamento(
+              const fimCobertura = await buscarFimCobertura(
                 v.placa || null,
                 v.chassi || null,
                 v.codigo_associado ? Number(v.codigo_associado) : null,
               );
-              const dataFallback = v.data_contrato_final
-                ? new Date(v.data_contrato_final)
-                : v.data_contrato ? new Date(v.data_contrato) : null;
-              const dataBase = ultimoPagamento ?? dataFallback;
-              const { dataInativo, dias } = dataBase ? diasDesde(dataBase, v.data_contrato) : { dataInativo: null, dias: null };
+              // Prioridade: fim da cobertura paga → alteração de situação no SGA → fim/início do contrato
+              const { dataInativo, dias } = escolherDataInativacao([
+                fimCobertura,
+                dataAlteracaoConfiavel(v),
+                parseDataSGA(v.data_contrato_final),
+                parseDataSGA(v.data_contrato),
+              ]);
               const item: VeiculoInativoRDV = {
                 placa: v.placa || '',
                 chassi: v.chassi || '',

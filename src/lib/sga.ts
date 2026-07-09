@@ -182,11 +182,33 @@ function formatarData(d: Date): string {
 
 interface SGABoleto {
   data_pagamento?: string;
+  data_vencimento?: string;
+  data_emissao?: string;
+  tipo_boleto?: string;
   situacao_boleto?: string;
   veiculos?: Array<{ chassi?: string }>;
 }
 
-export async function buscarUltimoPagamento(
+// Boletos que não representam mensalidade de cobertura: acerto de saída/renegociação.
+// Um cancelamento parcelado gera FECHAMENTOs pagos meses depois do fim da cobertura.
+const TIPOS_NAO_MENSALIDADE = ['FECHAMENTO', 'ACORDO'];
+
+function ehMensalidade(b: SGABoleto): boolean {
+  const tipo = (b.tipo_boleto || '').toUpperCase();
+  return !TIPOS_NAO_MENSALIDADE.some(t => tipo.includes(t));
+}
+
+export function parseDataSGA(s?: string | null): Date | null {
+  if (!s || s.startsWith('0000-00-00')) return null;
+  const d = new Date(s.includes(' ') ? s.replace(' ', 'T') : s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// Data em que o veículo deixou de ter cobertura paga:
+// - vencimento da última MENSALIDADE baixada (pagamento atrasado não puxa a data pra frente);
+// - se só existem boletos de fechamento/acordo, usa a emissão do primeiro fechamento
+//   (momento em que o cancelamento começou).
+export async function buscarFimCobertura(
   placa: string | null | undefined,
   chassi?: string | null,
   codigoAssociado?: number | null,
@@ -197,6 +219,7 @@ export async function buscarUltimoPagamento(
   const JANELA = 200;
   const MAX_JANELAS = 6; // até 1200 dias (~3 anos) para trás
   const hoje = new Date();
+  let inicioFechamento: Date | null = null;
 
   for (let i = 0; i < MAX_JANELAS; i++) {
     const fim = new Date(hoje);
@@ -229,19 +252,50 @@ export async function buscarUltimoPagamento(
         boletos = data.filter(b => b.veiculos?.some(v => v.chassi?.toUpperCase() === chassiUp));
       }
 
-      const pagos = boletos
-        .filter(b => b.data_pagamento && b.data_pagamento !== '0000-00-00' && b.situacao_boleto === 'BAIXADO')
-        .map(b => new Date(b.data_pagamento!))
-        .filter(d => !isNaN(d.getTime()));
+      const baixados = boletos.filter(b =>
+        b.data_pagamento && !b.data_pagamento.startsWith('0000-00-00') && b.situacao_boleto === 'BAIXADO'
+      );
 
-      if (pagos.length > 0) {
-        return pagos.reduce((a, b) => (b > a ? b : a));
+      const vencimentos = baixados
+        .filter(ehMensalidade)
+        .map(b => parseDataSGA(b.data_vencimento) ?? parseDataSGA(b.data_pagamento))
+        .filter((d): d is Date => d !== null);
+
+      if (vencimentos.length > 0) {
+        // Janela mais recente com mensalidade paga — o maior vencimento dela é o fim da cobertura
+        return vencimentos.reduce((a, b) => (b > a ? b : a));
+      }
+
+      // Só fechamentos/acordos nesta janela: guarda a emissão mais antiga e continua procurando mensalidade
+      for (const b of baixados) {
+        const emissao = parseDataSGA(b.data_emissao) ?? parseDataSGA(b.data_vencimento);
+        if (emissao && (!inicioFechamento || emissao < inicioFechamento)) inicioFechamento = emissao;
       }
     } catch {
       continue;
     }
   }
-  return null;
+  return inicioFechamento;
+}
+
+// Data de alteração do registro no SGA, descartando o mutirão de migração que
+// tocou quase todos os registros no mesmo dia (não representa inativação real).
+const DATA_MIGRACAO_SGA = '2025-09-29';
+
+export function dataAlteracaoConfiavel(v: { data_alteracao?: string | null }): Date | null {
+  const raw = v.data_alteracao;
+  if (!raw || raw.startsWith(DATA_MIGRACAO_SGA)) return null;
+  return parseDataSGA(raw);
+}
+
+// Escolhe a primeira data plausível (válida e não-futura) e devolve dias corridos até hoje
+export function escolherDataInativacao(candidatas: Array<Date | null | undefined>): { dataInativo: string | null; dias: number | null } {
+  for (const d of candidatas) {
+    if (!d || isNaN(d.getTime())) continue;
+    const dias = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+    if (dias >= 0) return { dataInativo: d.toISOString(), dias };
+  }
+  return { dataInativo: null, dias: null };
 }
 
 export async function buscarSituacaoVeiculo(placaOuChassi: string): Promise<{ situacao: string; codigo_situacao: number } | null> {
