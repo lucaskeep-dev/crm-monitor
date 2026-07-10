@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { listarVeiculosPorSituacao, listarSituacoesVeiculo, buscarFimCobertura, inicioInatividadePorBoleto, dataAlteracaoConfiavel, escolherDataInativacao, parseDataSGA } from '@/lib/sga';
+import { listarVeiculosPorSituacao, listarSituacoesVeiculo, buscarUltimoPagamento, dataAlteracaoConfiavel, escolherDataInativacao, parseDataSGA } from '@/lib/sga';
 import { obterStatusVeiculo } from '@/lib/rdv';
 import { lerSituacoesConfig } from '@/lib/storage';
 import { VeiculoInativoRDV } from '@/types';
@@ -38,15 +38,15 @@ export async function GET() {
 
           if (!statusRDV.existe) return null;
 
-          const fimCobertura = await buscarFimCobertura(
+          const ultimoPagamento = await buscarUltimoPagamento(
             v.placa || null,
             v.chassi || null,
             v.codigo_associado ? Number(v.codigo_associado) : null,
           );
-          // Prioridade: último vencimento pago + 30 dias (boleto seguinte não pago)
+          // Prioridade: data do último pagamento recebido (última entrada de dinheiro)
           // → alteração de situação no SGA → fim/início do contrato
           const { dataInativo, dias } = escolherDataInativacao([
-            inicioInatividadePorBoleto(fimCobertura),
+            ultimoPagamento,
             dataAlteracaoConfiavel(v),
             parseDataSGA(v.data_contrato_final),
             parseDataSGA(v.data_contrato),

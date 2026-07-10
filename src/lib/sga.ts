@@ -204,12 +204,12 @@ function ehTaxaServico(b: SGABoleto): boolean {
   return TIPOS_TAXA_SERVICO.some(t => tipo.includes(t));
 }
 
-// Data em que o veículo deixou de ter cobertura paga: VENCIMENTO do último boleto
-// BAIXADO que não seja taxa de serviço. Usa vencimento (não data de pagamento) pra
-// que quitação atrasada de boleto antigo não puxe a data pra frente. Não filtra
-// "FECHAMENTO": neste SGA as mensalidades normais são emitidas como carnês desse
-// tipo, então ele não discrimina mensalidade de acerto (verificado em 09/07/2026).
-export async function buscarFimCobertura(
+// Última entrada de dinheiro do veículo: DATA DE PAGAMENTO do último boleto
+// BAIXADO que não seja taxa de serviço (regra do Lucas: "pagou em 05/06 e hoje
+// é 05/07 → 1 mês sem me dar dinheiro"; quitação atrasada REINICIA a contagem,
+// porque dinheiro entrou). Não filtra "FECHAMENTO": neste SGA as mensalidades
+// normais são emitidas como carnês desse tipo (verificado em 09/07/2026).
+export async function buscarUltimoPagamento(
   placa: string | null | undefined,
   chassi?: string | null,
   codigoAssociado?: number | null,
@@ -252,29 +252,20 @@ export async function buscarFimCobertura(
         boletos = data.filter(b => b.veiculos?.some(v => v.chassi?.toUpperCase() === chassiUp));
       }
 
-      const vencimentos = boletos
+      const pagamentos = boletos
         .filter(b => b.data_pagamento && !b.data_pagamento.startsWith('0000-00-00') && b.situacao_boleto === 'BAIXADO' && !ehTaxaServico(b))
-        .map(b => parseDataSGA(b.data_vencimento) ?? parseDataSGA(b.data_pagamento))
+        .map(b => parseDataSGA(b.data_pagamento))
         .filter((d): d is Date => d !== null);
 
-      if (vencimentos.length > 0) {
-        // Janela mais recente com boleto pago — o maior vencimento dela é o fim da cobertura
-        return vencimentos.reduce((a, b) => (b > a ? b : a));
+      if (pagamentos.length > 0) {
+        // Janela mais recente com boleto pago — o pagamento mais novo dela é a última entrada
+        return pagamentos.reduce((a, b) => (b > a ? b : a));
       }
     } catch {
       continue;
     }
   }
   return null;
-}
-
-// Início da inatividade pela regra do negócio (revisão do Lucas em 09/07/2026):
-// conta a partir do PRÓPRIO último vencimento pago — o primeiro momento sem
-// pagamento. Se o vencimento está no futuro (parcela paga adiantada), o veículo
-// acabou de ficar inativo: conta a partir de hoje (0 dias), sem cair nos fallbacks.
-export function inicioInatividadePorBoleto(fimCobertura: Date | null): Date | null {
-  if (!fimCobertura) return null;
-  return fimCobertura > new Date() ? new Date() : fimCobertura;
 }
 
 // Data de alteração do registro no SGA, descartando o mutirão de migração que
