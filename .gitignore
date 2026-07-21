@@ -45,3 +45,4 @@ data/logs.json
 data/usuarios.json
 data/downloads-rdv/
 data/atualizar-rdv.log
+_tmp_*
