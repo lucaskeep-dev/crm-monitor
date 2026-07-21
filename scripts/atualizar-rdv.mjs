@@ -1,5 +1,5 @@
 // Robô de atualização da base RDV.
-// Loga no portal redeveiculos.com, baixa o "Relatório de Ativos" (Ativos → Lista → Exportar)
+// Loga no portal de rastreamento (RDV_PORTAL_URL), baixa o "Relatório de Ativos" (Ativos → Lista → Exportar)
 // e envia pra rota /api/rdv/importar do próprio app (autenticado por CRON_SECRET).
 //
 // Uso: node scripts/atualizar-rdv.mjs
@@ -13,6 +13,10 @@ import { fileURLToPath } from 'url';
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIR_DOWNLOADS = path.join(RAIZ, 'data', 'downloads-rdv');
 const TENTATIVAS = 2;
+// Domínio do portal de rastreamento. Configurável por env pra sobreviver a
+// trocas de marca/domínio sem mexer no código (ex.: redeveiculos.com →
+// zenbeneficios.rastreamento.vip em 07/2026). Sem barra no final.
+const PORTAL_URL = (process.env.RDV_PORTAL_URL || 'https://zenbeneficios.rastreamento.vip').replace(/\/+$/, '');
 
 function log(msg) {
   console.log(`[${new Date().toISOString()}] ${msg}`);
@@ -35,7 +39,7 @@ async function baixarRelatorio() {
     const page = await ctx.newPage();
 
     log('abrindo página de login...');
-    await page.goto('https://redeveiculos.com/login', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.goto(`${PORTAL_URL}/login`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
     // O JS da página precisa terminar de carregar antes do submit funcionar
     await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
     await page.waitForTimeout(3_000);
@@ -59,7 +63,7 @@ async function baixarRelatorio() {
     log(`login ok (${page.url()})`);
 
     log('abrindo Ativos → Lista...');
-    await page.goto('https://redeveiculos.com/veiculos/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.goto(`${PORTAL_URL}/veiculos/`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await page.getByText('Lista').first().click();
     await page.locator('#btn-exportar').waitFor({ state: 'visible', timeout: 60_000 });
 
